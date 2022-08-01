@@ -1,0 +1,34 @@
+
+@mixin backgroundImageDark() {
+  background-image: var(--background-image-dark)
+}
+
+@mixin backgroundImageLight() {
+  background-image: var(--background-image-light)
+}
+
+@mixin borderImageNavbar() {
+  @include borderImage(var(--border-image-navbar) fill 24 28 27 22 repeat);
+}
+
+@mixin borderImageThin() {
+  @include borderImage(var(--border-image-thin) fill 3 repeat);
+}
+
+@mixin borderImageComplex() {
+  @include borderImage(var(--border-image-complex) 19 24 37 25 fill repeat);
+}
+
+@mixin boxShadow($value) {
+  -moz-box-shadow: $value;
+  -webkit-box-shadow: $value;
+  -o-box-shadow: $value;
+  box-shadow: $value;
+}
+
+@mixin borderImage($value) {
+  -moz-border-image: $value;
+  -webkit-border-image: $value;
+  -o-border-image: $value;
+  border-image: $value;
+}

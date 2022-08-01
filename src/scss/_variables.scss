@@ -1,0 +1,49 @@
+@import "../../node_modules/bootswatch/dist/darkly/variables";
+
+$web-font-path: false;
+$fa-font-path: "../../node_modules/font-awesome/fonts";
+
+$navbar-light-brand-color: #fff;
+$navbar-light-active-color: #fff;
+$navbar-light-color: rgba(255,255,255,0.5);
+$navbar-light-hover-color: #fff;
+$navbar-light-disabled-color: rgba(255,255,255,0.3);
+
+$appColors: (
+  "lgray":          rgb(119, 119, 119),
+  "dgray":          rgb(105, 105, 105),
+  "red":            rgb(255, 77, 77),
+  "green":          rgb(0, 255, 0),
+  "blue":           rgb(105, 105, 255),
+  "dblue":          rgb(55, 90, 127),
+  "gold":           rgb(199, 179, 119),
+  "grey":           rgb(105, 105, 105),
+  "lighterblack":   rgb(60, 60, 60),
+  "lblack":         rgb(37, 37, 37),
+  "black":          rgb(0, 0, 0),
+  "orange":         rgb(255, 168, 0),
+  "yellow":         rgb(255, 255, 100),
+  "white":          rgb(255, 255, 255),
+);
+
+:root {
+  --grid-size: 32px;
+  --image-empty-socket: url('../assets/images/empty-socket.png');
+  --image-pendant: url('../assets/images/pendant.png');
+  --image-head: url('../assets/images/head.png');
+  --image-torso: url('../assets/images/torso.png');
+  --image-waist: url('../assets/images/waist.png');
+  --image-feet: url('../assets/images/feet.png');
+  --image-hands: url('../assets/images/hands.png');
+  --image-weapon: url('../assets/images/weapon.png');
+
+  --border-image-navbar: url('../assets/images/navbar.png');
+  --border-image-thin: url('../assets/images/border-thin.png');
+  --border-image-complex: url('../assets/images/border-complex.png');
+  --background-image-dark: url('../assets/images/background-dark.png');
+  --background-image-light: url('../assets/images/background-light.png');
+
+  @each $color, $value in $appColors {
+    --color-#{$color}: #{$value};
+  }
+}

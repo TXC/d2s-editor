@@ -1,0 +1,19 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "extends": ["plugin:@typescript-eslint/recommended"],
+    "overrides": [
+        {
+            "files": [ "src/js/**/*.tsx", "src/js/**/*.ts" ],
+            "rules": {
+                "quotes": [ 2, "single" ]
+            }
+        }
+    ],
+    // 1 = warning, 2 = error
+    "rules": {
+        "@typescript-eslint/ban-ts-comment": 1,
+        "no-console": 1
+    }
+}

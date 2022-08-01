@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="scss/index.scss" rel="stylesheet" />
+  <title>d2s - Example</title>
+</head>
+
+<body>
+    <div class="container">
+      <div class="row mt-2">
+        <p>
+          Click run. Then copy and paste the result to js/d2/constants.bundle.min.js
+        </p>
+      </div>
+      <div class="row mt-2">
+        <button id="run" class="btn btn-primary">Run</button>
+      </div>
+      <div class="row mt-2">
+        <code id="result"></code>
+      </div>
+    </div>
+    <script type="module" src="../node_modules/@dschu012/d2s/lib/index.js"></script>
+    <script>
+      const files = [
+        "data/local/LNG/ENG/string.txt",
+        "data/local/LNG/ENG/patchstring.txt",
+        "data/local/LNG/ENG/expansionstring.txt",
+        "data/global/excel/CharStats.txt",
+        "data/global/excel/PlayerClass.txt",
+        "data/global/excel/SkillDesc.txt",
+        "data/global/excel/Skills.txt",
+        "data/global/excel/RareSuffix.txt",
+        "data/global/excel/RarePrefix.txt",
+        "data/global/excel/MagicPrefix.txt",
+        "data/global/excel/MagicSuffix.txt",
+        "data/global/excel/Properties.txt",
+        "data/global/excel/ItemStatCost.txt",
+        "data/global/excel/Runes.txt",
+        "data/global/excel/SetItems.txt",
+        "data/global/excel/UniqueItems.txt",
+        "data/global/excel/ItemTypes.txt",
+        "data/global/excel/Armor.txt",
+        "data/global/excel/Weapons.txt",
+        "data/global/excel/Misc.txt",
+        "data/global/excel/Gems.txt",
+      ]
+      document.getElementById("run").addEventListener("click", async function() {
+        let data = {};
+        for(const file of files) {
+          let response = await fetch(file);
+          data[file.substring(file.lastIndexOf('/') + 1, file.length)] = await response.text();
+        }
+        document.getElementById("result").innerText = `window.constants = {"constants": ${JSON.stringify(d2s.readConstantData(data))}}`;
+      });
+    </script>
+</body>
+</html>

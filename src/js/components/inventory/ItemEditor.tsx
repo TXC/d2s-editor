@@ -42,7 +42,7 @@ const ItemRows: ItemRows = (entries) => {
 
 const ItemBooleanAttributes: ItemBasicElement = ({id, item, onEvent}) => {
   return (
-    <div className="form-row">
+    <div className="form-row mb-3">
       <div className="col-md-12">
         <div className="form-check form-check-inline">
           <input
@@ -606,12 +606,12 @@ const ItemEditor: ItemEditorElement = ({id, item, location, callOnEvent}) => {
   let setAttributesList: Array<JSX.Element> = []
   if (item.set_attributes) {
     setAttributesList = item.set_attributes.map((attribute, idx) => (
-      <div key={`SetAttr${idx}`}>
+      <div key={`SetAttr${idx}`} className="mt-3 border border-light">
         <div>{`Set Stats List ${idx}`}</div>
         <ItemStatsEditor
           itemStats={attribute}
           id={`Set${id}-${idx}`}
-          onChange={(data: types.IMagicProperty[]) => {
+          change={(data: types.IMagicProperty[]) => {
             const newItem = item
             newItem.set_attributes[idx] = data
             onEvent('update', newItem)
@@ -624,12 +624,12 @@ const ItemEditor: ItemEditorElement = ({id, item, location, callOnEvent}) => {
   let socketedItemsList: Array<JSX.Element> = []
   if (item.socketed_items) {
     socketedItemsList = item.socketed_items.map((socket, idx) => (
-    <div key={`Socketed${idx}`}>
+    <div key={`Socketed${idx}`} className="mt-3 border border-light">
         <div>{`Socketed Item ${idx}`}</div>
         <ItemStatsEditor
           itemStats={socket.magic_attributes}
           id={`Socketed${id}-${idx}`}
-          onChange={(data: types.IMagicProperty[]) => {
+          change={(data: types.IMagicProperty[]) => {
             const newItem = item
             newItem.socketed_items[idx].magic_attributes = data
             onEvent('update', newItem)
@@ -641,7 +641,7 @@ const ItemEditor: ItemEditorElement = ({id, item, location, callOnEvent}) => {
 
   return (
     <div>
-      <div className="form-row d-flex justify-content-between mt-3 pl-5 pr-5">
+      <div className="row d-flex justify-content-center mb-3">
         <Item
           id="item-editor"
           item={item}
@@ -680,12 +680,12 @@ const ItemEditor: ItemEditorElement = ({id, item, location, callOnEvent}) => {
         )}
 
         { item.magic_attributes && (
-          <div id="magic_attributes">
+          <div id="magic_attributes" className="mt-3 border border-light">
             <div>Item Stats</div>
             <ItemStatsEditor
               itemStats={item.magic_attributes}
               id={`Magic${id}`}
-              onChange={(data: types.IMagicProperty[]) => {
+              change={(data: types.IMagicProperty[]) => {
                 const newItem = item
                 newItem.magic_attributes = data
                 onEvent('update', newItem)
@@ -694,12 +694,12 @@ const ItemEditor: ItemEditorElement = ({id, item, location, callOnEvent}) => {
           </div>
         )}
         { item.runeword_attributes && (
-          <div id="runeword_attributes">
+          <div id="runeword_attributes" className="mt-3 border border-light">
             <div>Runeword Stats</div>
             <ItemStatsEditor
               itemStats={item.runeword_attributes}
               id={`Runeword${id}`}
-              onChange={(data: types.IMagicProperty[]) => {
+              change={(data: types.IMagicProperty[]) => {
                 const newItem = item
                 newItem.runeword_attributes = data
                 onEvent('update', newItem)

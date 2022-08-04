@@ -1,0 +1,266 @@
+import {
+  NPCElement,
+  Difficulty,
+  Act,
+  SingleNPCElement,
+  ActElement,
+  DifficultyElement,
+  updateNPC,
+  updateAct,
+  updateDiff,
+} from '../types/components/NPC'
+
+const npcs: Array<Act> = [
+  {
+    key: 'act_i', label: 'Act I', all: false,
+    npcs: [
+      {key: 'akara', label: 'Akara'},
+      {key: 'charsi', label: 'Charsi'},
+      {key: 'gheed', label: 'Gheed'},
+      {key: 'kashya', label: 'Kashya'},
+      {key: 'warriv_act_i', label: 'Warriv'},
+    ]
+  },
+  {
+    key: 'act_ii', label: 'Act II', all: false,
+    npcs: [
+      {key: 'drogan', label: 'Drogan'},
+      {key: 'elzix', label: 'Elzix'},
+      {key: 'fara', label: 'Fara'},
+      {key: 'geglash', label: 'Geglash'},
+      {key: 'greiz', label: 'Greiz'},
+      {key: 'jerhyn', label: 'Jerhyn'},
+      {key: 'lysnader', label: 'Lysnader'},
+      {key: 'meshif_act_ii', label: 'Meshif'},
+      {key: 'warriv_act_ii', label: 'Warriv'},
+    ]
+  },
+  {
+    key: 'act_iii', label: 'Act III', all: false,
+    npcs: [
+      {key: 'alkor', label: 'Alkor'},
+      {key: 'ashera', label: 'Ashera'},
+      {key: 'cain_act_iii', label: 'Deckard Cain'},
+      {key: 'hratli', label: 'Hratli'},
+      {key: 'meshif_act_iii', label: 'Meshif'},
+      {key: 'natalya', label: 'Natalya'},
+      {key: 'ormus', label: 'Ormus'},
+    ]
+  },
+  {
+    key: 'act_iv', label: 'Act IV', all: false,
+    npcs: [
+    ]
+  },
+  {
+    key: 'act_v', label: 'Act V', all: false,
+    npcs: [
+      {key: 'anya', label: 'Anya'},
+      {key: 'cain_act_v', label: 'Deckard Cain'},
+      {key: 'malah', label: 'Malah'},
+      {key: 'nihlathak', label: 'Nihlathak'},
+      {key: 'qualkehk', label: 'Qual-Kehk'},
+    ]
+  },
+]
+
+const SingleNPC: SingleNPCElement = ({saveData, difficulty, npc, updateNPC}) => {
+  // @ts-ignore
+  const defaultValue = saveData.header.npcs[difficulty.key][npc.key]
+
+  return (
+    <li>
+      <label>{npc.label}</label>
+      <ul>
+        <li>
+          <div className="custom-control custom-switch">
+            <input
+              className="custom-control-input"
+              type="checkbox"
+              id={`NPCintro${difficulty.key}${npc.key}`}
+              defaultChecked={defaultValue.intro}
+              value={1}
+              onChange={() => updateNPC(difficulty, npc)}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor={`NPCintro${difficulty.key}${npc.key}`}
+            >
+              Introduced
+            </label>
+          </div>
+        </li>
+        <li>
+          <div className="custom-control custom-switch">
+            <input
+              className="custom-control-input"
+              type="checkbox"
+              id={`NPCcongrat${difficulty.key}${npc.key}`}
+              defaultChecked={defaultValue.congrats}
+              value={1}
+              onChange={() => updateNPC(difficulty, npc)}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor={`NPCcongrat${difficulty.key}${npc.key}`}
+            >
+              Congratulated
+            </label>
+          </div>
+        </li>
+      </ul>
+    </li>
+  )
+}
+
+const Act: ActElement = ({saveData, difficulty, act, updateNPC, updateAct}) => {
+  const npcRows = act.npcs.map(npc => {
+    return (
+      <SingleNPC
+        key={`NPC-${difficulty.key}-${act.key}-${npc.key}`}
+        saveData={saveData}
+        difficulty={difficulty}
+        npc={npc}
+        updateNPC={updateNPC}
+      />
+    )
+  })
+
+  return (
+    <li>
+      {npcRows.length > 0 && (
+        <>
+          <div className="custom-control custom-switch">
+            <input
+              className="custom-control-input"
+              type="checkbox"
+              id={`NPCAct${difficulty.key}${act.key}`}
+              defaultChecked={act.all}
+              value={1}
+              onChange={() => updateAct(difficulty, act)}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor={`NPCAct${difficulty.key}${act.key}`}
+            >
+              {act.label}
+            </label>
+          </div>
+          <ul>
+            {npcRows}
+          </ul>
+        </>
+      )}
+    </li>
+  )
+}
+
+const Difficulty: DifficultyElement = ({
+  saveData,
+  difficulty,
+  updateNPC,
+  updateDiff,
+  updateAct,
+}) => {
+  const actRows = npcs.map(act => {
+    return (
+      <Act
+        key={`NPC-Act-${difficulty.key}-${act.key}`}
+        saveData={saveData}
+        difficulty={difficulty}
+        act={act}
+        updateNPC={updateNPC}
+        updateAct={updateAct}
+      />
+    )
+  })
+
+  return (
+    <div className="col-md-4 p-2">
+      <ul>
+        <li>
+          <div className="custom-control custom-switch">
+            <input
+              className="custom-control-input"
+              type="checkbox"
+              id={`NPCDifficulty${difficulty.key}`}
+              defaultChecked={difficulty.all}
+              value={1}
+              onChange={() => updateDiff(difficulty)}
+            />
+            <label
+              className="custom-control-label"
+              htmlFor={`NPCDifficulty${difficulty.key}`}
+            >
+              {difficulty.label}
+            </label>
+          </div>
+          <ul>
+            {actRows.length > 0 ? actRows : []}
+          </ul>
+        </li>
+      </ul>
+    </div>
+  )
+}
+
+
+const NPC: NPCElement = ({saveData, updateSaveData}) => {
+  const difficulties: Array<Difficulty> = [
+    {key: 'normal', all: false, label: 'Normal', npcs: JSON.parse(JSON.stringify(npcs))},
+    {key: 'nm', all: false, label: 'Nightmare', npcs: JSON.parse(JSON.stringify(npcs))},
+    {key: 'hell', all: false, label: 'Hell', npcs: JSON.parse(JSON.stringify(npcs))}
+  ]
+
+
+  const updateNPC: updateNPC = (difficulty, act, npc, key, state) => {
+    const newData = saveData
+    // @ts-ignore
+    newData.header.npcs[difficulty.key][npc.key][key] = state
+    if (state !== act.all && act.all) {
+      act.all = false;
+    }
+    if (state !== difficulty.all && difficulty.all) {
+      difficulty.all = false;
+    }
+    updateSaveData(newData)
+  }
+  const updateAct: updateAct = (difficulty, act) => {
+    for (const npc of act.npcs) {
+      updateNPC(difficulty, act, npc, 'intro', !act.all)
+      updateNPC(difficulty, act, npc, 'congrats', !act.all)
+    }
+  }
+  const updateDiff: updateDiff = (difficulty) => {
+    for (const act of difficulty.npcs) {
+      if (!act.all && difficulty.all) {
+        act.all = true;
+      } else if (act.all && !difficulty.all) {
+        act.all = false;
+      }
+      updateAct(difficulty, act);
+      act.all = !difficulty.all;
+    }
+  }
+
+  const difficultyRow = difficulties.map(row => {
+    return (
+      <Difficulty
+        key={`NPCDiff-${row.key}`}
+        saveData={saveData}
+        difficulty={row}
+        updateNPC={updateNPC}
+        updateDiff={updateDiff}
+        updateAct={updateAct}
+      />
+    )
+  })
+
+  return (
+    <div className="form-row">
+      {difficultyRow.length > 0 ? difficultyRow : []}
+    </div>
+  )
+}
+
+export default NPC

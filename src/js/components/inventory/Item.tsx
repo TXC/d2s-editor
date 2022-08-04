@@ -34,15 +34,15 @@ const Item: ItemElement = ({id, item, clazz = undefined, clickEvent = undefined,
   const ref = React.useRef(null)
 
   const socketStyle = (idx: number) => {
-    const y = [[50], [25, 75], [5, 50, 95]];
-    const x = [[50], [10, 90]];
-    const i = idx;
-    //console.log(item, item.total_nr_of_sockets)
+    const y = [[50], [25, 75], [5, 50, 95]],
+          x = [[50], [10, 90]],
+          i = idx
+
     switch (item.total_nr_of_sockets) {
       case 1:
       case 2:
       case 3: {
-        const j = item.total_nr_of_sockets - 1;
+        const j = item.total_nr_of_sockets - 1
         if (item.inv_height > 2 || item.total_nr_of_sockets < 3) {
           return {
             transform: `translateX(-${x[0][0]}%) translateY(-${y[j][i]}%)`,
@@ -50,8 +50,8 @@ const Item: ItemElement = ({id, item, clazz = undefined, clickEvent = undefined,
             left: `${x[0][0]}%`,
           };
         }
-        const k = [y[2][0], y[2][2], y[2][2]];
-        const l = [x[0][0], x[1][0], x[1][1]];
+        const k = [y[2][0], y[2][2], y[2][2]],
+              l = [x[0][0], x[1][0], x[1][1]]
         return {
           transform: `translateX(-${l[i]}%) translateY(-${k[i]}%)`,
           top: `${k[i]}%`,
@@ -60,7 +60,7 @@ const Item: ItemElement = ({id, item, clazz = undefined, clickEvent = undefined,
       }
       case 4:
       case 6: {
-        const j = (item.total_nr_of_sockets / 2) - 1;
+        const j = (item.total_nr_of_sockets / 2) - 1
         return {
           transform: `translateX(-${x[1][i % 2]}%) translateY(-${y[j][Math.floor(i / 2)]}%)`,
           top: `${y[j][Math.floor(i / 2)]}%`,
@@ -68,8 +68,8 @@ const Item: ItemElement = ({id, item, clazz = undefined, clickEvent = undefined,
         };
       }
       case 5: {
-        const k = [y[2][0], y[2][0], y[2][2], y[2][2], y[2][1]];
-        const l = [x[1][0], x[1][1], x[1][0], x[1][1], x[0][0]];
+        const k = [y[2][0], y[2][0], y[2][2], y[2][2], y[2][1]],
+              l = [x[1][0], x[1][1], x[1][0], x[1][1], x[0][0]]
         return {
           transform: `translateX(-${l[i]}%) translateY(-${k[i]}%)`,
           top: `${k[i]}%`,

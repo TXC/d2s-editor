@@ -75,7 +75,7 @@ const numValues: numValues = (id) => {
   return 1;
 }
 
-const ClassValues: StatValueElement = ({id, itemStat, setContent, i}) => {
+const ClassValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   const classRows = classes.map((c, idx) => (
     <option value={idx} key={idx}>{c.co}</option>
   ))
@@ -83,12 +83,12 @@ const ClassValues: StatValueElement = ({id, itemStat, setContent, i}) => {
   return (
     <div className="col-md-2" id={`classStat${itemStat.id}-${i}`}>
       <select
-        id={`Stat${id}Value${i}`}
+        id={`Stat${itemStat.id}Value${i}`}
         className="form-control"
         defaultValue={itemStat.values[i]}
         onChange={e => {
           itemStat.values[i] = Number(e.currentTarget.value)
-          setContent(itemStat)
+          update(itemStat, rowId)
         }}
       >
         { classRows.length > 0 ? classRows : [] }
@@ -97,7 +97,7 @@ const ClassValues: StatValueElement = ({id, itemStat, setContent, i}) => {
   )
 }
 
-const ClassSkillValues: StatValueElement = ({id, itemStat, setContent, i}) => {
+const ClassSkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   const classSkillRows = classes[itemStat.values[i]].ts.map((t: string, idx: number) => (
     <option value={idx} key={idx}>{t}</option>
   ))
@@ -105,12 +105,12 @@ const ClassSkillValues: StatValueElement = ({id, itemStat, setContent, i}) => {
   return (
     <div className="col-md-2" id={`classSkillStat${itemStat.id}-${i}`}>
       <select
-        id={`Stat${id}Value${i}`}
+        id={`Stat${itemStat.id}Value${i}`}
         className="form-control"
         defaultValue={itemStat.values[i]}
         onChange={e => {
           itemStat.values[i] = Number(e.currentTarget.value)
-          setContent(itemStat)
+          update(itemStat, rowId)
         }}
       >
         { classSkillRows.length > 0 ? classSkillRows : [] }
@@ -119,19 +119,19 @@ const ClassSkillValues: StatValueElement = ({id, itemStat, setContent, i}) => {
   )
 }
 
-const SkillValues: StatValueElement = ({id, itemStat, setContent, i}) => {
+const SkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   const skillRows = skills.map(s => (
     <option value={s.i} key={s.i}>{s.v.s}</option>
   ))
   return (
     <div className="col-md-2" id={`skillStat${itemStat.id}-${i}`}>
       <select
-        id={`Stat${id}Value${i}`}
+        id={`Stat${itemStat.id}Value${i}`}
         className="form-control"
         defaultValue={itemStat.values[i]}
         onChange={e => {
           itemStat.values[i] = Number(e.currentTarget.value)
-          setContent(itemStat)
+          update(itemStat, rowId)
         }}
       >
         { skillRows.length > 0 ? skillRows : [] }
@@ -141,23 +141,20 @@ const SkillValues: StatValueElement = ({id, itemStat, setContent, i}) => {
 }
 
 const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
-  const [content, setContent] = React.useState(itemStat)
 
-  React.useEffect(() => {
-    update(content, rowId)
-  }, [content]);
-
-  const change: change = (id, values, idx) => {
+  const change: change = (id, value, idx) => {
     const newData = itemStat,
       maxValue = max(id),
       minValue = min(id)
 
-    if (values[idx] > maxValue) {
+    if (value > maxValue) {
       newData.values[idx] = maxValue
-    } else if (values[idx] < minValue) {
+    } else if (value < minValue) {
       newData.values[idx] = minValue
+    } else {
+      newData.values[idx] = value
     }
-    setContent(newData);
+    update(newData, rowId)
   }
 
   const statRows = stats.map((stat, idx) => (
@@ -165,15 +162,16 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
   ))
 
   const StatValueRows: Array<JSX.Element> = []
-  for (const i in utils.range(numValues(content.id))) {
+  for (const i in utils.range(numValues(itemStat.id))) {
     const idx = (Number(i) + 1)
 
     if (isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <ClassValues
-          id={rowId}
+          key={`ClassValue${idx}`}
+          rowId={rowId}
           itemStat={itemStat}
-          setContent={setContent}
+          update={update}
           i={Number(i)}
         />
       )
@@ -181,9 +179,10 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     else if (!isClass(itemStat.id, idx) && isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <ClassSkillValues
-          id={rowId}
+          key={`ClassSkillValue${idx}`}
+          rowId={rowId}
           itemStat={itemStat}
-          setContent={setContent}
+          update={update}
           i={Number(i)}
         />
       )
@@ -191,24 +190,29 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     else if (!isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <SkillValues
-          id={rowId}
+          key={`SkillValue${idx}`}
+          rowId={rowId}
           itemStat={itemStat}
-          setContent={setContent}
+          update={update}
           i={Number(i)}
         />
       )
     }
     else if (!isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
-        <div className="col-md-2" id={`itemStat${itemStat.id}-${i}`}>
+        <div
+          key={`UnknownValue${idx}`}
+          className="col-md-2"
+          id={`itemStat${itemStat.id}-${i}`}
+        >
           <input
             type="number"
             className="form-control"
-            id={`Stat${rowId}Value${i}`}
+            id={`Stat${itemStat.id}Value${i}`}
             min={min(itemStat.id)}
             max={max(itemStat.id)}
             defaultValue={itemStat.values[i]}
-            onInput={() => change(itemStat.id, itemStat.values, Number(i))}
+            onChange={e => change(itemStat.id, Number(e.currentTarget.value), Number(i))}
           />
         </div>
       )
@@ -216,7 +220,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
   }
 
   return (
-    <div className="form-row" id={`Row${rowId}`}>
+    <div className="form-row" id={`Row${itemStat.id}`}>
       <div className="col-md-4">
         <div className="form-row">
           <div className="col-md-2">
@@ -232,8 +236,9 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
               id={`Stat${rowId}`}
               defaultValue={itemStat.id}
               onChange={e => {
-                content.id = Number(e.currentTarget.value)
-                setContent(content)
+                const newItemStat = itemStat
+                newItemStat.id = Number(e.currentTarget.value)
+                update(newItemStat, rowId)
               }}
             >
               { statRows.length > 0 ? statRows : [] }
@@ -247,7 +252,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
   )
 }
 
-const ItemStatsEditor: ItemStatsEditorElement = ({itemStats, id, onChange}) => {
+const ItemStatsEditor: ItemStatsEditorElement = ({itemStats, id, change}) => {
   const [content, setContent] = React.useState<types.IMagicProperty[]>(itemStats);
 
   const add: add = () => {
@@ -261,27 +266,36 @@ const ItemStatsEditor: ItemStatsEditorElement = ({itemStats, id, onChange}) => {
       op_stats: [],
     }
     setContent(prev => {
-      return [...new Set([emptyItem, ...prev])]
+      prev.push(emptyItem)
+      return prev
     })
   }
   const remove: remove = (idx) => {
-    setContent(list => {
-      list.splice(idx, 1)
-      return list
-    })
+    setContent(list => list.filter((_, id) => id !== idx))
   }
   const update: update = (data, idx) => {
     content[idx] = data
     setContent(content)
   }
 
-  React.useEffect(() => {
-    onChange(content)
-  }, [content]);
+  let ItemStatRows: Array<JSX.Element> = [];
+  const MapStatRows = () => {
+    ItemStatRows = content.map((itemStat, idx) => (
+      <StatsRow
+        key={`StatRow${itemStat.id}`}
+        rowId={idx}
+        itemStat={itemStat}
+        update={update}
+        remove={remove}
+      />
+    ))
+  }
 
-  const ItemStatRows = content.map((itemStat, idx) => (
-    <StatsRow key={`Row${idx}`} rowId={idx} itemStat={itemStat} update={update} remove={remove} />
-  ))
+  React.useEffect(() => {
+    MapStatRows()
+    change(content)
+  }, [content]);
+  MapStatRows();
 
   return (
     <div id={id}>

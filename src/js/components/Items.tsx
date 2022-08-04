@@ -332,7 +332,6 @@ const Items: Items = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'belt'}>
-          {/* if="activeTab == 1 || activeTab == 5" */}
           <Grid
             id={'BeltGrid'}
             width={grid.belt.w}
@@ -344,7 +343,6 @@ const Items: Items = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'inventory'}>
-          {/* if="activeTab == 1 || activeTab == 5" */}
           <Grid
             id={'InventoryGrid'}
             width={grid.inv.w}
@@ -356,7 +354,6 @@ const Items: Items = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'stash'}>
-          {/* if="activeTab == 2 || activeTab == 5" */}
           <Grid
             id={'StashGrid'}
             width={grid.stash.w}
@@ -368,7 +365,6 @@ const Items: Items = ({
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'cube'}>
-          {/* if="activeTab == 3 || activeTab == 5" */}
           <Grid
             id={'CubeGrid'}
             width={grid.cube.w}

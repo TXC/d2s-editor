@@ -6,6 +6,7 @@ import Quests from './Quests'
 import Skills from './Skills'
 import Items from './Items'
 import MessageViewer from './MessageViewer'
+import NPC from './NPC'
 import utils from '../utils'
 import useGrid from '../hooks/Grid'
 import {Dropdown, Tab, Nav, Button, ButtonGroup, Container, Col, Row, Modal} from 'react-bootstrap'
@@ -148,7 +149,7 @@ const Character: CharacterElement = ({updateSaveData}) => {
             </Dropdown.Menu>
           </Dropdown>
         </div>
-        <div className="input-group-append"><span>&nbsp;</span></div>
+        <div className="input-group-append"><span> </span></div>
       </div>
     </div>
   )
@@ -508,6 +509,9 @@ const MainContent: MainElement = ({
                         <Nav.Link eventKey="waypoints">Waypoints</Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
+                        <Nav.Link eventKey="npcs">NPCs</Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
                         <Nav.Link eventKey="quests">Quests</Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
@@ -529,6 +533,12 @@ const MainContent: MainElement = ({
                       </Tab.Pane>
                       <Tab.Pane eventKey={'waypoints'} transition={false}>
                         <Waypoints
+                          saveData={saveData}
+                          updateSaveData={updateSaveData}
+                        />
+                      </Tab.Pane>
+                      <Tab.Pane eventKey={'npcs'} transition={false}>
+                        <NPC
                           saveData={saveData}
                           updateSaveData={updateSaveData}
                         />
@@ -1064,7 +1074,6 @@ const App: AppElement = () => {
     }
 
     if (JSON.stringify(oldData) !== JSON.stringify(saveData)) {
-      console.log('Object diff, saving...')
       setSaveData(saveData)
     }
   }, [saveData])

@@ -69,13 +69,13 @@ module.exports = {
         test: /\.(png|svg|jpe?g|gif|woff2?|eot|ttf|otf)$/,
         parser: {
           dataUrlCondition: {
-            maxSize: 500 * 1024, // 500kb
+            maxSize: 24 * 1024, // 24KiB
           },
         },
         generator: {
           filename: '[path][name][ext][query]',
         },
-        type: 'asset/resource',
+        type: 'asset',
       },
       {
         test: /\.s[ac]ss$/i,

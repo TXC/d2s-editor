@@ -6,7 +6,6 @@ const SkillCol: SkillColElement = ({rowId, noOfRows, saveData, updateSaveData}) 
   const Cols = []
   for (const i in utils.range(noOfRows)) {
     const colId = ((rowId * noOfRows) + Number(i))
-    console.log(colId, rowId, noOfRows, i)
     const col = (
       <div key={`col${colId}`} className="col-md-12">
         <label
@@ -49,12 +48,12 @@ const Skills: SkillsElement = ({saveData, updateSaveData}) => {
   for (const i in utils.range(noOfCols)) {
     const row = (
       <div
-        key={`SkillCol-${i}${rowId}`}
+        key={`SkillColumn-${i}${rowId}`}
         className="col-md-2"
       >
         <div className="row">
           <SkillCol
-            key={rowId}
+            key={`SkillCol-${i}${rowId}`}
             rowId={rowId}
             noOfRows={noOfRows}
             saveData={saveData}

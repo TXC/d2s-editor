@@ -1,14 +1,5 @@
-import {
-  NPCElement,
-  Difficulty,
-  Act,
-  SingleNPCElement,
-  ActElement,
-  DifficultyElement,
-  updateNPC,
-  updateAct,
-  updateDiff,
-} from '../types/components/NPC'
+import {D2CS} from '../types'
+import { updateSaveData } from './App'
 
 const npcs: Array<Act> = [
   {
@@ -64,7 +55,33 @@ const npcs: Array<Act> = [
   },
 ]
 
-const SingleNPC: SingleNPCElement = ({saveData, difficulty, npc, updateNPC}) => {
+type updateNPC = (difficulty: Difficulty, act: Act, npc: State, key: string, state: boolean) => void
+type updateAct = (difficulty: Difficulty, act: Act) => void
+type updateDiff = (difficulty: Difficulty) => void
+
+interface State {
+  key: string;
+  label: string;
+}
+interface Act extends State {
+  all: boolean;
+  npcs: Array<State>;
+}
+type Difficulty = {
+  key: string;
+  all: boolean;
+  label: string;
+  npcs: Array<Act>;
+}
+
+type SingleNPCProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act
+  npc: State;
+  updateNPC: updateNPC;
+}
+const SingleNPC = ({saveData, difficulty, act, npc, updateNPC}: SingleNPCProps) => {
   // @ts-ignore
   const defaultValue = saveData.header.npcs[difficulty.key][npc.key]
 
@@ -80,7 +97,7 @@ const SingleNPC: SingleNPCElement = ({saveData, difficulty, npc, updateNPC}) => 
               id={`NPCintro${difficulty.key}${npc.key}`}
               defaultChecked={defaultValue.intro}
               value={1}
-              onChange={() => updateNPC(difficulty, npc)}
+              onChange={() => updateNPC(difficulty, act, npc, 'intro', !defaultValue.intro)}
             />
             <label
               className="custom-control-label"
@@ -98,7 +115,7 @@ const SingleNPC: SingleNPCElement = ({saveData, difficulty, npc, updateNPC}) => 
               id={`NPCcongrat${difficulty.key}${npc.key}`}
               defaultChecked={defaultValue.congrats}
               value={1}
-              onChange={() => updateNPC(difficulty, npc)}
+              onChange={() => updateNPC(difficulty, act, npc, 'congrats', !defaultValue.congrats)}
             />
             <label
               className="custom-control-label"
@@ -113,13 +130,21 @@ const SingleNPC: SingleNPCElement = ({saveData, difficulty, npc, updateNPC}) => 
   )
 }
 
-const Act: ActElement = ({saveData, difficulty, act, updateNPC, updateAct}) => {
+type ActProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act;
+  updateNPC: updateNPC;
+  updateAct: updateAct;
+};
+const Act = ({saveData, difficulty, act, updateNPC, updateAct}: ActProps) => {
   const npcRows = act.npcs.map(npc => {
     return (
       <SingleNPC
         key={`NPC-${difficulty.key}-${act.key}-${npc.key}`}
         saveData={saveData}
         difficulty={difficulty}
+        act={act}
         npc={npc}
         updateNPC={updateNPC}
       />
@@ -155,13 +180,20 @@ const Act: ActElement = ({saveData, difficulty, act, updateNPC, updateAct}) => {
   )
 }
 
-const Difficulty: DifficultyElement = ({
+type DifficultyProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  updateNPC: updateNPC;
+  updateAct: updateAct;
+  updateDiff: updateDiff;
+};
+const Difficulty = ({
   saveData,
   difficulty,
   updateNPC,
   updateDiff,
   updateAct,
-}) => {
+}: DifficultyProps) => {
   const actRows = npcs.map(act => {
     return (
       <Act
@@ -204,8 +236,11 @@ const Difficulty: DifficultyElement = ({
   )
 }
 
-
-const NPC: NPCElement = ({saveData, updateSaveData}) => {
+type NPCProps = {
+  saveData: D2CS;
+  updateSaveData: updateSaveData;
+}
+const NPC = ({saveData, updateSaveData}: NPCProps) => {
   const difficulties: Array<Difficulty> = [
     {key: 'normal', all: false, label: 'Normal', npcs: JSON.parse(JSON.stringify(npcs))},
     {key: 'nm', all: false, label: 'Nightmare', npcs: JSON.parse(JSON.stringify(npcs))},

@@ -1,18 +1,28 @@
 import * as React from 'react'
-import {D2CItem} from '../../types/d2c'
+import {D2CItem} from '../../types'
 import Item from './Item'
-import type {
-  GridColsElement,
-  GridElement,
-  gridDragEnter,
-  gridDragLeave,
-  gridDragOver, gridDrop, gridGridRC
-} from '../../types/components/inventory/Grid'
-import type {itemRC} from '../../types/components/inventory/Item'
+import type {onEvent} from '../App'
+import type {itemRC} from './Item'
 import {contextMenu} from 'react-contexify'
 import {RCGridMenuId, RCItemMenuId} from '../../Common'
 
-const GridCols: GridColsElement = ({id, rowId, width, dragover, dragenter, dragleave, gridRC, drop}) => {
+export type gridGridRC = ($evt: React.MouseEvent, w: number, h: number) => void;
+export type gridDragOver = (event: React.DragEvent) => void;
+export type gridDragEnter = (event: React.DragEvent, x: number, y: number) => void;
+export type gridDragLeave = (event: React.DragEvent, x: number, y: number) => void;
+export type gridDrop = (event: React.DragEvent, x: number, y: number) => void;
+
+type GridColsProps = {
+  id: string;
+  rowId: number;
+  width: number;
+  dragover: gridDragOver;
+  dragenter: gridDragEnter;
+  dragleave: gridDragLeave;
+  gridRC: gridGridRC;
+  drop: gridDrop;
+}
+const GridCols = ({id, rowId, width, dragover, dragenter, dragleave, gridRC, drop}: GridColsProps) => {
   const Cols = []
   for (let colId = 0; colId < width; colId++) {
     const ref = React.useRef(null)
@@ -38,7 +48,16 @@ const GridCols: GridColsElement = ({id, rowId, width, dragover, dragenter, dragl
   )
 }
 
-const Grid: GridElement = ({id, width, height, page, items, selectEvent, onEvent}) => {
+type GridProps = {
+  id: string;
+  width: number;
+  height: number;
+  page: number;
+  items: D2CItem[];
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  onEvent: onEvent;
+}
+const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps) => {
   const dragover: gridDragOver = (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';

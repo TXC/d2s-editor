@@ -1,11 +1,13 @@
 import * as d2s from '@dschu012/d2s'
-import type {UtilsColor, UtilsColorMap, contains, overlaps, findIndex, setPropertiesOnItem} from './types/utils'
-import type {CharPack, ItemPack} from './types/d2'
+import type {D2CItem, ItemPack, CharPack} from './types'
 // @ts-ignore
 import ItemPackData from './d2/ItemPack';
 // @ts-ignore
 import CharPackData from './d2/CharPack';
 
+export type UtilsColor = {
+  [key: string]: number;
+}
 const colors: UtilsColor = {
   whit: 0,
   lgry: 1,
@@ -30,6 +32,9 @@ const colors: UtilsColor = {
   bwht: 20,
 };
 
+export type UtilsColorMap = {
+  [key: number]: string;
+}
 const colormaps: UtilsColorMap = {
   1: 'data/global/items/Palette/grey.dat',
   2: 'data/global/items/Palette/grey2.dat',
@@ -199,13 +204,14 @@ const range = (number: number): number[] => {
 }
 
 const UUIDv4 = (): string => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8)
     return v.toString(16);
   });
 }
 
-const contains: contains = (a, b) => {
+const contains = (a: Array<number>, b: Array<number>) => {
   return !(
     b[0] < a[0] ||
     b[1] < a[1] ||
@@ -214,7 +220,7 @@ const contains: contains = (a, b) => {
   );
 }
 
-const overlaps: overlaps = (a, b) => {
+const overlaps = (a: Array<number>, b: Array<number>) => {
   if (a[0] >= b[2] || b[0] >= a[2]) {
     return false;
   }
@@ -222,7 +228,7 @@ const overlaps: overlaps = (a, b) => {
 
 }
 
-const findIndex: findIndex = (list, i) => {
+const findIndex = (list: D2CItem[], i: D2CItem) => {
   return list.findIndex(item =>
     item.location_id == i.location_id
     && item.equipped_id == i.equipped_id
@@ -232,7 +238,7 @@ const findIndex: findIndex = (list, i) => {
   );
 }
 
-const setPropertiesOnItem: setPropertiesOnItem = async (item) => {
+const setPropertiesOnItem = async (item: D2CItem|null) => {
   if (!item) {
     return;
   }

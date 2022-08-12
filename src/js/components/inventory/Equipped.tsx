@@ -1,6 +1,5 @@
 import * as React from 'react'
-import type {AlternativeEquipmentElement, EquippedElement} from '../../types/components/inventory/Equipped'
-import type {EquipDragEnter, EquipDragLeave, EquipDragOver, EquipDrop} from '../../types/Common'
+import type {onEvent} from '../App'
 import {
   EquippedItem,
   head,
@@ -15,12 +14,19 @@ import {
   hands,
   alt_right_hand,
   alt_left_hand,
-  RCItemMenuId
+  RCItemMenuId,
+  EquipDragEnter, EquipDragLeave, EquipDragOver, EquipDrop
 } from '../../Common'
 import {contextMenu} from 'react-contexify'
-import {itemRC} from '../../types/components/inventory/Item'
+import {itemRC} from './Item'
+import {D2CItem} from '../../types'
 
-const AlternativeEquipment: AlternativeEquipmentElement = ({side, altDisplayed, setAltDisplayed}) => {
+type AlternativeEquipmentProps = {
+  side: string;
+  altDisplayed: boolean;
+  setAltDisplayed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const AlternativeEquipment = ({side, altDisplayed, setAltDisplayed}: AlternativeEquipmentProps) => {
   return (
     <span className={`${side}-tab tabs`}>
       <div className="btn-group" role="group">
@@ -39,7 +45,14 @@ const AlternativeEquipment: AlternativeEquipmentElement = ({side, altDisplayed, 
  )
 }
 
-const Equipped: EquippedElement = ({id, items, selectEvent, onEvent}) => {
+type EquippedProps = {
+  id: string;
+  expansion: boolean;
+  items: D2CItem[];
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  onEvent: onEvent;
+}
+const Equipped = ({id, expansion, items, selectEvent, onEvent}: EquippedProps) => {
   const [altDisplayed, setAltDisplayed] = React.useState<boolean>(false);
 
   const itemRC: itemRC = ($evt, item) => {
@@ -120,7 +133,9 @@ const Equipped: EquippedElement = ({id, items, selectEvent, onEvent}) => {
         drop={drop} dragover={dragover} dragenter={dragenter} dragleave={dragleave} itemRC={itemRC} selectEvent={selectEvent}
       />
 
-      <AlternativeEquipment side={'right'} altDisplayed={altDisplayed} setAltDisplayed={setAltDisplayed} />
+      { expansion && (
+        <AlternativeEquipment side={'right'} altDisplayed={altDisplayed} setAltDisplayed={setAltDisplayed} />
+      )}
       { !altDisplayed && (
         <EquippedItem
           id={id} className={'right-hand weapon'} item={right_hand(items)} position={4}
@@ -134,7 +149,9 @@ const Equipped: EquippedElement = ({id, items, selectEvent, onEvent}) => {
         />
       )}
 
-      <AlternativeEquipment side={'left'}  altDisplayed={altDisplayed} setAltDisplayed={setAltDisplayed} />
+      { expansion && (
+        <AlternativeEquipment side={'left'}  altDisplayed={altDisplayed} setAltDisplayed={setAltDisplayed} />
+      )}
       { !altDisplayed && (
         <EquippedItem
           id={id} className={'left-hand weapon'} item={left_hand(items)} position={5}

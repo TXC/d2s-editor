@@ -1,8 +1,20 @@
-//import * as React from 'react';
-import {MessageElement, MessageViewerElement} from '../types/components/MessageViewer'
 import {Alert} from 'react-bootstrap'
+import {Variant} from 'react-bootstrap/types'
 
-const Message: MessageElement = ({message, idx, removeMessage}) => {
+export type addNotification = (data: notificationType) => void
+export type removeNotification = (idx: number) => void
+
+export type notificationType = {
+  alert: Variant;
+  message: string;
+}
+
+type MessageProps = {
+  message: notificationType;
+  idx: number;
+  removeMessage: removeNotification;
+}
+const Message = ({message, idx, removeMessage}: MessageProps) => {
   return (
     <Alert variant={message.alert} onClose={() => removeMessage(idx)} dismissible>
       <p>{message.message}</p>
@@ -10,7 +22,11 @@ const Message: MessageElement = ({message, idx, removeMessage}) => {
   )
 }
 
-const MessageViewer: MessageViewerElement = ({messages, removeMessage}) => {
+type MessageViewerProps = {
+  messages: notificationType[];
+  removeMessage: removeNotification;
+}
+const MessageViewer = ({messages, removeMessage}: MessageViewerProps) => {
     return (
         <>
             {

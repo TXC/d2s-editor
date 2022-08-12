@@ -1,5 +1,17 @@
 import * as React from 'react'
-import {gridType} from '../types'
+
+export type heightWidthType = {
+  w: number;
+  h: number;
+}
+
+export type gridType = {
+  [key: string]: heightWidthType;
+  inv: heightWidthType;
+  stash: heightWidthType;
+  cube: heightWidthType;
+  belt: heightWidthType;
+}
 
 export default () => {
     const defaultGrid: gridType = {

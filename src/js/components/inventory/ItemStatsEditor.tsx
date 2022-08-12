@@ -1,24 +1,11 @@
-import * as React from 'react'
 import utils from '../../utils'
-import type {
-  ItemStatsEditorElement,
-  StatsRowElement,
-  StatValueElement,
-  isClass,
-  isClassSkill,
-  isSkill,
-  max,
-  min,
-  numValues,
-  change, add, remove, update,
-} from '../../types/components/inventory/ItemStatsEditor'
 import {types} from '@dschu012/d2s'
 
 const stats = window.constants.constants.magical_properties
 const skills = window.constants.constants.skills.map((e,i)=> { return { i:i, v:e }}).filter(e => e.v != null && e.v.s != null)
 const classes = window.constants.constants.classes
 
-const isClass: isClass = (id, idx) => {
+const isClass = (id: number, idx: number) => {
   const stat = stats[id];
   if ((stat.dF == 14) && idx == 2) {
     return true;
@@ -28,14 +15,14 @@ const isClass: isClass = (id, idx) => {
   }
   return false;
 }
-const isClassSkill: isClassSkill = (id: number, idx: number) => {
+const isClassSkill = (id: number, idx: number) => {
   const stat = stats[id];
   if ((stat.dF == 14) && idx == 1) {
     return true;
   }
   return false;
 }
-const isSkill: isSkill = (id, idx) => {
+const isSkill = (id: number, idx: number) => {
   const stat = stats[id];
   if (stat.dF == 14) {
     return false;
@@ -49,33 +36,42 @@ const isSkill: isSkill = (id, idx) => {
   }
   return false;
 }
-const max: max = (id) => {
+const max = (id: number) => {
   const stat = stats[id],
         sA = stat.sA ?? 0,
         sB = stat.sB ?? 0
   return utils.shift(1, sB) - 1 - sA
 }
-const min: min = (id) => {
+const min = (id: number) => {
   //for the stat to be present need value > 0
   const stat = stats[id],
         add = stat.sA ?? 0;
   return Number(-add);
 }
-const numValues: numValues = (id) => {
+const numValues = (id: number) => {
   const stat = stats[id];
   if (stat.dF == 14 || stat.e == 2) {
-    return 3;
+    return 3
   }
   if (stat.e == 3) {
-    return 4;
+    return 4
   }
   if (stat.sP) {
-    return 2;
+    return 2
   }
-  return 1;
+  if (stat.np) {
+    return stat.np
+  }
+  return 1
 }
 
-const ClassValues: StatValueElement = ({itemStat, rowId, update, i}) => {
+type StatValueProps = {
+  itemStat: types.IMagicProperty;
+  rowId: number;
+  update: (data: types.IMagicProperty, idx: number) => void
+  i: number;
+}
+const ClassValues = ({itemStat, rowId, update, i}: StatValueProps) => {
   const classRows = classes.map((c, idx) => (
     <option value={idx} key={idx}>{c.co}</option>
   ))
@@ -97,7 +93,7 @@ const ClassValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   )
 }
 
-const ClassSkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
+const ClassSkillValues = ({itemStat, rowId, update, i}: StatValueProps) => {
   const classSkillRows = classes[itemStat.values[i]].ts.map((t: string, idx: number) => (
     <option value={idx} key={idx}>{t}</option>
   ))
@@ -119,7 +115,7 @@ const ClassSkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   )
 }
 
-const SkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
+const SkillValues = ({itemStat, rowId, update, i}: StatValueProps) => {
   const skillRows = skills.map(s => (
     <option value={s.i} key={s.i}>{s.v.s}</option>
   ))
@@ -140,13 +136,20 @@ const SkillValues: StatValueElement = ({itemStat, rowId, update, i}) => {
   )
 }
 
-const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
+type StatsRowProps = {
+  rowId: number
+  itemStat: types.IMagicProperty
+  update: (data: types.IMagicProperty, idx: number) => void
+  remove: (idx: number) => void
+}
+const StatsRow = ({rowId, itemStat, update, remove}: StatsRowProps) => {
 
-  const change: change = (id, value, idx) => {
+  const change = (id: number, value: number, idx: number) => {
     const newData = itemStat,
       maxValue = max(id),
       minValue = min(id)
 
+    console.log(itemStat, idx)
     if (value > maxValue) {
       newData.values[idx] = maxValue
     } else if (value < minValue) {
@@ -154,6 +157,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     } else {
       newData.values[idx] = value
     }
+    console.log(newData, idx)
     update(newData, rowId)
   }
 
@@ -162,13 +166,14 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
   ))
 
   const StatValueRows: Array<JSX.Element> = []
-  for (const i in utils.range(numValues(itemStat.id))) {
+  const StatValueNum = numValues(itemStat.id)
+  for (const i in utils.range(StatValueNum)) {
     const idx = (Number(i) + 1)
 
     if (isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <ClassValues
-          key={`ClassValue${idx}`}
+          key={`ClassValue${idx}-${rowId}`}
           rowId={rowId}
           itemStat={itemStat}
           update={update}
@@ -179,7 +184,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     else if (!isClass(itemStat.id, idx) && isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <ClassSkillValues
-          key={`ClassSkillValue${idx}`}
+          key={`ClassSkillValue${idx}-${rowId}`}
           rowId={rowId}
           itemStat={itemStat}
           update={update}
@@ -190,7 +195,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     else if (!isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <SkillValues
-          key={`SkillValue${idx}`}
+          key={`SkillValue${idx}-${rowId}`}
           rowId={rowId}
           itemStat={itemStat}
           update={update}
@@ -201,7 +206,7 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
     else if (!isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <div
-          key={`UnknownValue${idx}`}
+          key={`UnknownValue${idx}-${rowId}`}
           className="col-md-2"
           id={`itemStat${itemStat.id}-${i}`}
         >
@@ -252,10 +257,14 @@ const StatsRow: StatsRowElement = ({rowId, itemStat, update, remove}) => {
   )
 }
 
-const ItemStatsEditor: ItemStatsEditorElement = ({itemStats, id, change}) => {
-  const [content, setContent] = React.useState<types.IMagicProperty[]>(itemStats);
-
-  const add: add = () => {
+type updateStats = (data: types.IMagicProperty[]) => void
+type ItemStatsEditorProps = {
+  itemStats: types.IMagicProperty[];
+  id: string;
+  updateStats: updateStats
+}
+const ItemStatsEditor = ({itemStats, id, updateStats}: ItemStatsEditorProps) => {
+  const add = () => {
     const emptyItem: types.IMagicProperty = {
       id: 0,
       name: '',
@@ -265,37 +274,27 @@ const ItemStatsEditor: ItemStatsEditorElement = ({itemStats, id, change}) => {
       op_value: 0,
       op_stats: [],
     }
-    setContent(prev => {
-      prev.push(emptyItem)
-      return prev
-    })
+    itemStats.push(emptyItem)
+    updateStats(itemStats)
   }
-  const remove: remove = (idx) => {
-    setContent(list => list.filter((_, id) => id !== idx))
+  const remove = (idx: number) => {
+    updateStats(itemStats.filter((_, id) => id !== idx))
   }
-  const update: update = (data, idx) => {
-    content[idx] = data
-    setContent(content)
-  }
-
-  let ItemStatRows: Array<JSX.Element> = [];
-  const MapStatRows = () => {
-    ItemStatRows = content.map((itemStat, idx) => (
-      <StatsRow
-        key={`StatRow${itemStat.id}`}
-        rowId={idx}
-        itemStat={itemStat}
-        update={update}
-        remove={remove}
-      />
-    ))
+  const update = (data: types.IMagicProperty, idx: number) => {
+    const newData = itemStats
+    newData[idx] = data
+    updateStats(newData)
   }
 
-  React.useEffect(() => {
-    MapStatRows()
-    change(content)
-  }, [content]);
-  MapStatRows();
+  const ItemStatRows: Array<JSX.Element> = itemStats.map((itemStat, idx) => (
+    <StatsRow
+      key={`StatRow${itemStat.id}-${idx}`}
+      rowId={idx}
+      itemStat={itemStat}
+      update={update}
+      remove={remove}
+    />
+  ))
 
   return (
     <div id={id}>

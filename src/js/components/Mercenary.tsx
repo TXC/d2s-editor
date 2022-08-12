@@ -1,9 +1,10 @@
-//import * as React from 'react'
-import {handleInputChangeFunc, ItemsElement, MercenaryElement} from '../types/components/Mercenary'
 import {EquippedItem, head, torso, right_hand, left_hand, mercenary, RCItemMenuId} from '../Common'
 import utils from '../utils'
 import {contextMenu} from 'react-contexify'
-import type {itemRC} from '../types/components/inventory/Item'
+import type {itemRC} from './inventory/Item'
+import React from 'react'
+import {D2CS, D2CItem} from '../types'
+import {updateSaveData} from './App'
 
 const nameRogueScouts = [
   'Aliza',
@@ -196,7 +197,12 @@ const mercenaryTypes = [
   {type: 'barbarian', mercenary: 'Barbarian', attribute: '', difficulty: 'Hell',},
 ]
 
-const Items: ItemsElement = ({id, saveData, selectEvent}) => {
+type ItemsProps = {
+  id: string;
+  saveData: D2CS;
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+}
+const Items = ({id, saveData, selectEvent}: ItemsProps) => {
   const items = mercenary(saveData)
   const itemRC: itemRC = ($evt, item) => {
     if (item) {
@@ -229,7 +235,13 @@ const Items: ItemsElement = ({id, saveData, selectEvent}) => {
   )
 }
 
-const Mercenary: MercenaryElement = ({id, saveData, updateSaveData, selectEvent}) => {
+type MercenaryProps = {
+  id: string;
+  saveData: D2CS;
+  updateSaveData: updateSaveData;
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+}
+const Mercenary = ({id, saveData, updateSaveData, selectEvent}: MercenaryProps) => {
   const mercTypeId = saveData.header.merc_type,
         mercNameId = saveData.header.merc_name_id,
         mercExp = saveData.header.merc_experience ?? 0,
@@ -237,7 +249,7 @@ const Mercenary: MercenaryElement = ({id, saveData, updateSaveData, selectEvent}
         mercType = mercenaryTypes[mercTypeId]
   let mercName, mercLevel;
 
-  const handleInputChange: handleInputChangeFunc = (event) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.currentTarget
     const value = target.type === 'checkbox' ? target.checked : target.value
     const name = target.name

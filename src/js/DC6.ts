@@ -1,6 +1,6 @@
 import * as d2s from '@dschu012/d2s'
 import utils from './utils'
-import {D2CItem} from './types/d2c'
+import {D2CItem} from './types'
 
 class DC6Common {
   protected dc6: Uint8Array|null = null;

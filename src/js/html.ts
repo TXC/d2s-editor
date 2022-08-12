@@ -1,11 +1,12 @@
 
-export default function() {
-  let tagArgs = arguments;
-  return tagArgs[0].reduce((accumulator: string, string: string, index: number) => {
-    accumulator += string;
-    if (index + 1 in tagArgs) {
-      accumulator += tagArgs[index + 1];
-    }
-    return accumulator;
-  }, '');
+export default (strings: string, ...keys: Array<any>) => {
+  return (...values: Array<any>) => {
+    const dict = values[values.length - 1] || {};
+    const result = [strings[0]];
+    keys.forEach((key, i) => {
+      const value = Number.isInteger(key) ? values[key] : dict[key];
+      result.push(value, strings[i + 1]);
+    });
+    return result.join('');
+  };
 }

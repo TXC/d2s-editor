@@ -1,12 +1,15 @@
 import * as React from 'react'
 import {types} from '@dschu012/d2s'
 import {OverlayTrigger, Popover} from 'react-bootstrap'
-import type {StatDescriptionElement, ItemElement} from '../../types/components/inventory/Item'
-import type {D2CItem} from '../../types/d2c'
+import type {D2CItem} from '../../types'
 import parse from 'html-react-parser'
 
+export type itemRC = ($event: React.MouseEvent, item: D2CItem) => void
 
-const StatDescription: StatDescriptionElement = ({stat}) => {
+type StatDescriptionProps = {
+  stat: types.IMagicProperty;
+}
+const StatDescription = ({stat}: StatDescriptionProps) => {
   const format = (stat: types.IMagicProperty) => {
     if (!stat.description || stat.visible === false) {
       return null;
@@ -29,7 +32,14 @@ const StatDescription: StatDescriptionElement = ({stat}) => {
   )
 }
 
-const Item: ItemElement = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuEvent = undefined}) => {
+type ItemProps = {
+  id: string;
+  item: D2CItem;
+  clazz?: string;
+  clickEvent?: () => void;
+  contextMenuEvent?: React.MouseEventHandler;
+}
+const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuEvent = undefined}: ItemProps) => {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null)
 

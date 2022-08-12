@@ -3,6 +3,5 @@ type KeyValue = {
   value: string;
 }
 
-
 export type ItemPack = Array<KeyValue>;
 export type CharPack = Array<string>;

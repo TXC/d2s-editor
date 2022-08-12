@@ -11,42 +11,44 @@ import utils from '../utils'
 import useGrid from '../hooks/Grid'
 import {Dropdown, Tab, Nav, Button, ButtonGroup, Container, Col, Row, Modal} from 'react-bootstrap'
 
-import type {
-  AppElement,
-  MainElement,
-  NavBarElement,
-  RowBottomElement,
-  CharacterElement,
-  locationType,
-  D2CEvent,
-  onEvent,
-  paste,
-  newChar,
-  shareItem,
-  saveFile,
-  canPlaceItem,
-  findSafeLocation,
-  deleteItem,
-  onMove,
-  readBuffer,
-  updateItemPack,
-  updateSaveData,
-  gridChange,
-  onFileLoad,
-  onFileChange,
-  getLocationBasedOnActiveTab, optionClickedType, SelectedItemModalElement,
-} from '../types/components/App'
-import type {heightWidthType} from '../types/hooks/Grid'
-import type {D2CItem, D2CS} from '../types/d2c'
-import type {ItemPack} from '../types/d2'
-import type {notificationType, addNotification, removeNotification} from '../types/components/MessageViewer'
+import type {heightWidthType, gridType} from '../hooks/Grid'
+import type {ItemPack, D2CItem, D2CS} from '../types'
+import type {notificationType, removeNotification} from './MessageViewer'
 import {equipped, RCGridMenu, RCItemMenu, waist} from '../Common'
 import Mercenary from './Mercenary'
 import ItemEditor from './inventory/ItemEditor';
+import {KeyValue} from '../types/d2'
 //import DC6 from "../DC6";
 
+export type updateSaveData = (newData: D2CS|null) => void
+export type D2CEvent = {
+  uuid?: string;
+  item: D2CItem;
+  grid?: Array<number>;
+  id?: string;
+  location?: locationType,
+  type: string;
+}
+export type onEvent = (e: D2CEvent) => void;
+export type paste = (item: D2CItem|null, position?: locationType) => void;
+export type locationType = {
+  location: number;
+  equipped_location?: number;
+  x?: number;
+  y?: number;
+  storage_page?: number;
+}
+export type optionClickedProps = {
+  type: string;
+  item?: D2CItem;
+  grid?: Array<number>;
+}
+
 // region JSX functions
-const NavBar: NavBarElement = ({toggleTheme}) => {
+type NavBarProps = {
+  toggleTheme: () => void;
+}
+const NavBar = ({toggleTheme}: NavBarProps) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="octicon octicon-clippy navbar-brand">
@@ -77,13 +79,17 @@ const NavBar: NavBarElement = ({toggleTheme}) => {
   )
 }
 
-const Character: CharacterElement = ({updateSaveData}) => {
-  const newChar: newChar = (index) => {
+type CharacterProps = {
+  updateSaveData: updateSaveData;
+}
+const Character = ({updateSaveData}: CharacterProps) => {
+  const id = React.useId()
+  const newChar= (index: number) => {
     const charPack = utils.getCharPack()
     const bytes = utils.b64ToArrayBuffer(charPack[index]);
     readBuffer(bytes);
   }
-  const onFileLoad: onFileLoad = (event, filename) => {
+  const onFileLoad = (event: ProgressEvent<FileReader>, filename: string) => {
     if (!event.currentTarget) {
       throw 'Invalid object'
     }
@@ -94,7 +100,7 @@ const Character: CharacterElement = ({updateSaveData}) => {
     }
     readBuffer(new Uint8Array(itemData), filename);
   }
-  const onFileChange: onFileChange = (event) => {
+  const onFileChange = (event: React.FormEvent<HTMLInputElement>) => {
     const itemData = event.currentTarget.files
     if (itemData === null) {
       throw 'Invalid data'
@@ -106,7 +112,7 @@ const Character: CharacterElement = ({updateSaveData}) => {
     reader.readAsArrayBuffer(itemData[0]);
     //event.currentTarget.value = '';
   }
-  const readBuffer: readBuffer = (bytes, filename = null) => {
+  const readBuffer = (bytes: Uint8Array, filename: string|null = null) => {
     updateSaveData(null)
     d2s.read(bytes, window.constants.constants).then(response => {
       if (filename !== null) {
@@ -125,11 +131,11 @@ const Character: CharacterElement = ({updateSaveData}) => {
             name="d2sFile"
             accept=".d2s"
             onChange={onFileChange}
-            id="d2sFile"
+            id={id}
           />
           <label
             className="custom-file-label"
-            htmlFor="d2sFile"
+            htmlFor={id}
           >
             *.d2s
           </label>
@@ -155,7 +161,11 @@ const Character: CharacterElement = ({updateSaveData}) => {
   )
 }
 
-const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
+type RowBottomProps = {
+  saveData: D2CS | null;
+  updateSaveData: updateSaveData;
+}
+const RowBottom = ({saveData, updateSaveData}: RowBottomProps) => {
   const maxGold = () => {
     if (saveData === null) {
       return;
@@ -294,7 +304,7 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
     newData.header.progression = 15;
     updateSaveData(newData)
   }
-  const unlockAllWPs = (): void => {
+  const unlockAllWPs = () => {
     if (saveData === null) {
       return
     }
@@ -311,7 +321,7 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
     }
     updateSaveData(newData)
   }
-  const setLvl99 = (): void => {
+  const setLvl99 = () => {
     if (saveData === null) {
       return
     }
@@ -319,7 +329,7 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
     newData.header.level = 99;
     updateSaveData(newData)
   }
-  const setAllSkills20 = (): void => {
+  const setAllSkills20 = () => {
     if (saveData === null) {
       return;
     }
@@ -329,7 +339,7 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
     }
     updateSaveData(newData)
   }
-  const saveFile: saveFile = (version: number): void => {
+  const saveFile = (version: number) => {
     if (saveData === null) {
       return;
     }
@@ -369,8 +379,8 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
       <Row xs={1}>
         <Col xs={12}>
           <ButtonGroup className="mr-2">
-            <Button id="saveD2" onClick={() => saveFile(0x60)}>Save D2</Button>
-            <Button id="saveD2R" onClick={() => saveFile(0x61)}>Save D2R</Button>
+            <Button onClick={() => saveFile(0x60)}>Save D2</Button>
+            <Button onClick={() => saveFile(0x61)}>Save D2R</Button>
           </ButtonGroup>
         </Col>
       </Row>
@@ -378,8 +388,23 @@ const RowBottom: RowBottomElement = ({saveData, updateSaveData}) => {
   )
 }
 
-const SelectedItemModal: SelectedItemModalElement = ({isThemed, selected, setSelected, location, callOnEvent}) => {
-  const handleClose = () => setSelected(null);
+type SelectedItemModalProps = {
+  isThemed: boolean;
+  selected: D2CItem | null;
+  setLocation: React.Dispatch<React.SetStateAction<locationType | null>>;
+  setSelected: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  location: locationType | null;
+  callOnEvent: onEvent
+}
+const SelectedItemModal = ({isThemed, selected, setSelected, location, setLocation, callOnEvent}: SelectedItemModalProps) => {
+  const handleClose = () => {
+    if (!selected) {
+      return
+    }
+    callOnEvent({ item: selected, type: 'update' })
+    setSelected(null)
+  }
+  const id = React.useId()
 
   return (
     <Modal
@@ -395,8 +420,10 @@ const SelectedItemModal: SelectedItemModalElement = ({isThemed, selected, setSel
       <Modal.Body>
         {selected !== null && (
           <ItemEditor
-            id={'Selected'}
+            id={id}
             item={selected}
+            setSelected={setSelected}
+            setLocation={setLocation}
             location={location}
             callOnEvent={callOnEvent}
           />
@@ -433,6 +460,7 @@ const SelectedItemModal: SelectedItemModalElement = ({isThemed, selected, setSel
     </Modal>
   )
 }
+
 /*
 const Prutt = () => {
   const [img, setImg] = React.useState<string|null>(null);
@@ -460,7 +488,24 @@ const Prutt = () => {
   )
 }
 */
-const MainContent: MainElement = ({
+
+type MainContentProps = {
+  saveData: D2CS | null;
+  updateSaveData: (newData: D2CS|null) => void;
+  notifications: notificationType[];
+  removeNotification: removeNotification;
+  gridChange: (grid: gridType) => void;
+  activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  onEvent: onEvent
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  grid: gridType;
+  paste: (item: D2CItem | null, position?: locationType) => void;
+  clipboard: D2CItem | null;
+  isThemed: boolean;
+  itemPack: ItemPack;
+}
+const MainContent = ({
   saveData,
   updateSaveData,
   gridChange,
@@ -475,8 +520,9 @@ const MainContent: MainElement = ({
   paste,
   isThemed,
   itemPack
-}) => {
+}: MainContentProps) => {
   const [selectedIndex, setSelectedIndex] = React.useState<string>('stats');
+  const id = React.useId()
 
   return (
     <div className="row">
@@ -487,7 +533,7 @@ const MainContent: MainElement = ({
               This editor is still a work in progress. Some things may not work. Found a bug? <a
               href="https://github.com/TXC/d2s-editor/issues/new">Report it.</a>
             </div>
-            <form id="d2sForm">
+            <form id={id}>
               <fieldset>
                 <Character updateSaveData={updateSaveData} />
                 <MessageViewer messages={notifications} removeMessage={removeNotification}/>
@@ -572,7 +618,7 @@ const MainContent: MainElement = ({
                       </Tab.Pane>
                       <Tab.Pane eventKey={'mercenary'} transition={false}>
                         <Mercenary
-                          id={'mercenary'}
+                          id={`${id}-mercenary`}
                           saveData={saveData}
                           updateSaveData={updateSaveData}
                           selectEvent={selectEvent}
@@ -599,7 +645,7 @@ const MainContent: MainElement = ({
   )
 }
 
-const App: AppElement = () => {
+const App = () => {
   const {grid, updateGrid} = useGrid();
 
   const themed = localStorage.getItem('themed') === 'true'
@@ -613,7 +659,7 @@ const App: AppElement = () => {
   const [isThemed, setTheme] = React.useState<boolean>(themed);
   const [activeTab, setActiveTab] = React.useState<string>('equipped');
 
-  const optionClicked: optionClickedType = (event) => {
+  const optionClicked = (event: optionClickedProps) => {
     switch (event.type) {
       case 'Delete':
         if (!event.item) {
@@ -660,12 +706,12 @@ const App: AppElement = () => {
         break;
     }
   }
-  const gridChange: gridChange = (grid) => {
+  const gridChange = (grid: gridType) => {
     updateGrid(grid)
   }
 
   // region App functions
-  const canPlaceItem: canPlaceItem = (item, loc, x, y) => {
+  const canPlaceItem = (item: D2CItem, loc: number, x: number, y: number) => {
     if (saveData === null) {
       return false
     }
@@ -695,12 +741,18 @@ const App: AppElement = () => {
     }
     return true
   }
-  const findSafeLocation: findSafeLocation = (item) => {
-    const loop = (obj: heightWidthType, type: number): false | Array<number> => {
+  const findSafeLocation = (item: D2CItem) => {
+    const loop = (obj: heightWidthType, type: number): locationType | false => {
       for (let i = 0; i < obj.w; i++) {
         for (let j = 0; j < obj.h; j++) {
           if (canPlaceItem(item, type, i, j)) {
-            return [0, 0, i, j, type];
+            return {
+              location: 0,
+              equipped_location: 0,
+              x: i,
+              y: j,
+              storage_page: type
+            }
           }
         }
       }
@@ -717,19 +769,27 @@ const App: AppElement = () => {
     if ((result = loop(grid.cube, 4)) !== false) {
       return result;
     }
-    return [4, 0, 4, 0, 0];
+    return {
+      location: 4,
+      equipped_location: 0,
+      x: 4,
+      y: 0,
+      storage_page: 0
+    }
   }
-  const paste: paste = (item, position = []) => {
+  const paste: paste = (item, position) => {
     if (saveData === null) {
       return
     }
     const copy = JSON.parse(JSON.stringify(item != null ? item : clipboard));
-    const pos = position.length > 0 ? position : findSafeLocation(copy);
-    copy.location_id = pos[0];
-    copy.equipped_id = pos[1];
-    copy.position_x = pos[2];
-    copy.position_y = pos[3];
-    copy.alt_position_id = pos[4];
+
+    const pos = !position ? findSafeLocation(copy) : position
+    copy.location_id = pos.location;
+    copy.equipped_id = pos.equipped_location;
+    copy.position_x = pos.x;
+    copy.position_y = pos.y;
+    copy.alt_position_id = pos.storage_page;
+
     if (copy.location_id === 4) {
       addNotification({
         alert: 'alert alert-warning',
@@ -748,11 +808,11 @@ const App: AppElement = () => {
     //saveData.items.push(copy);
     setSelected(copy);
   }
-  const deleteItem: deleteItem = (list, idx) => {
+  const deleteItem = (list: D2CItem[], idx: number) => {
     list.splice(idx, 1);
     setSelected(null);
   }
-  const onEvent: onEvent = (e) => {
+  const onEvent = (e: D2CEvent) => {
     if (e.type == 'share') {
       shareItem(e.item);
     }
@@ -760,8 +820,15 @@ const App: AppElement = () => {
       setClipboard(JSON.parse(JSON.stringify(e.item)));
     }
     else if (e.type == 'update') {
+      if (saveData === null) {
+        return
+      }
       d2s.enhanceItems([e.item], window.constants.constants);
-      updateSaveData(saveData)
+      const newData = saveData
+      const idx = utils.findIndex(newData.items, e.item);
+      newData.items[idx] = e.item;
+      console.log(e, idx, newData.items[idx])
+      updateSaveData(newData)
       //utils.setPropertiesOnItem(e.item);
     }
     else if (e.type == 'delete') {
@@ -857,13 +924,19 @@ const App: AppElement = () => {
       }
       const {locationId, storagePage} = getLocationBasedOnActiveTab()
       if (canPlaceItem(e.item, storagePage, e.grid[0], e.grid[1])) {
-        paste(e.item, [locationId, e.location.equipped_location, e.grid[0], e.grid[1], storagePage]);
+        paste(e.item, {
+          location: locationId,
+          equipped_location: e.location.equipped_location,
+          x: e.grid[0],
+          y: e.grid[1],
+          storage_page: storagePage
+        });
       } else {
         paste(e.item);
       }
     }
   }
-  const getLocationBasedOnActiveTab: getLocationBasedOnActiveTab = () => {
+  const getLocationBasedOnActiveTab = () => {
     let locationId = 0, storagePage
     switch (activeTab) {
       case 'equipped': // Equipped
@@ -890,7 +963,7 @@ const App: AppElement = () => {
       storagePage: storagePage
     }
   }
-  const onMove: onMove = (item: D2CItem, e: D2CEvent) => {
+  const onMove = (item: D2CItem, e: D2CEvent) => {
     if (!e.location) {
       throw 'Invalid argument'
     }
@@ -926,7 +999,7 @@ const App: AppElement = () => {
     }
     return true;
   }
-  const shareItem: shareItem = async (item: D2CItem) => {
+  const shareItem = async (item: D2CItem) => {
     const bytes = await d2s.writeItem(item, 0x60, window.constants.constants);
     const base64 = utils.arrayBufferToBase64(bytes);
     await navigator.clipboard.writeText(base64);
@@ -977,28 +1050,28 @@ const App: AppElement = () => {
     }
   }
 
-  const addNotification: addNotification = (data) => {
+  const addNotification = (data: notificationType) => {
     setNotification(prev => {
       return [...new Set([data, ...prev])]
     })
 
   }
-  const removeNotification: removeNotification = (idx): void => {
+  const removeNotification = (idx: number) => {
     setNotification(list => {
       list.splice(idx, 1)
       return list
     })
   }
 
-  const toggleTheme = (): void => {
+  const toggleTheme = () => {
     setTheme(!isThemed)
   }
-  const updateItemPack: updateItemPack = (newData) => {
+  const updateItemPack = (newData: KeyValue) => {
     const newPack = itemPack
     newPack.push(newData)
     setItemPack(newPack)
   }
-  const updateSaveData: updateSaveData = (newData) => {
+  const updateSaveData = (newData: D2CS | null) => {
     if (newData === null) {
       setSaveData(null)
       return
@@ -1038,6 +1111,7 @@ const App: AppElement = () => {
       y: selected.position_y,
       storage_page: selected.alt_position_id
     })
+    d2s.enhanceItems([selected], window.constants.constants);
   }, [selected])
 
   // setPropertiesOnSave
@@ -1087,6 +1161,7 @@ const App: AppElement = () => {
       <SelectedItemModal
         isThemed={isThemed}
         location={location}
+        setLocation={setLocation}
         selected={selected}
         setSelected={setSelected}
         callOnEvent={onEvent}

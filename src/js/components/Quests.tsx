@@ -1,19 +1,6 @@
 //import * as React from 'react'
-import type {
-  Difficulty,
-  Act,
-  QuestElement,
-  ActElement,
-  DifficultyElement,
-  QuestsElement,
-  questReward,
-  updateQuest,
-  updateDiff,
-  updateAct,
-  resetDifficulty,
-  resetAct,
-  reset
-} from '../types/components/Quests'
+import {D2CS} from '../types'
+import { updateSaveData } from './App';
 
 const flags: Array<string> = ['is_completed', 'is_requirement_completed', 'is_received',
   'unk3', 'unk4', 'unk5', 'unk6', 'consumed_scroll', 'unk8', 'unk9', 'unk10',
@@ -102,7 +89,41 @@ const quests: Array<Act> = [
   },
 ];
 
-const Quest: QuestElement = ({saveData, difficulty, act, quest, updateQuest, reset}) => {
+interface State {
+  key: string;
+  label: string;
+}
+interface Quest extends State {
+  values: Array<State>
+}
+interface Act extends State {
+  all: boolean;
+  quests: Array<Quest>;
+}
+
+type updateQuest = (difficulty: Difficulty, act: Act, quest: Quest, state: State, newState: boolean|null) => void
+type updateDiff = (difficulty: Difficulty) => void
+type updateAct = (difficulty: Difficulty, act: Act) => void
+type resetDifficulty = (difficulty: Difficulty) => void
+type resetAct = (difficulty: Difficulty, act: Act) => void
+type reset = (difficulty: Difficulty, act: Act, quest: Quest) => void
+
+type Difficulty = {
+  key: string;
+  all: boolean;
+  label: string;
+  acts: Array<Act>;
+}
+
+type QuestProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act;
+  quest: Quest;
+  updateQuest: updateQuest;
+  reset: reset;
+};
+const Quest = ({saveData, difficulty, act, quest, updateQuest, reset}: QuestProps) => {
   const questValues = quest.values.map(state => {
     // @ts-ignore
     const defaultValue = saveData.header[difficulty.key][act.key][quest.key][state.key]
@@ -144,7 +165,16 @@ const Quest: QuestElement = ({saveData, difficulty, act, quest, updateQuest, res
   )
 }
 
-const Act: ActElement = ({saveData, difficulty, act, updateQuest, updateAct, resetAct, reset}) => {
+type ActProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act;
+  updateQuest: updateQuest;
+  updateAct: updateAct;
+  resetAct: resetAct;
+  reset: reset;
+};
+const Act = ({saveData, difficulty, act, updateQuest, updateAct, resetAct, reset}: ActProps) => {
   const questRows = act.quests.map(quest => {
     return (
       <Quest
@@ -192,7 +222,17 @@ const Act: ActElement = ({saveData, difficulty, act, updateQuest, updateAct, res
   )
 }
 
-const Difficulty: DifficultyElement = ({
+type DifficultyProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  updateQuest: updateQuest;
+  updateDiff: updateDiff;
+  updateAct: updateAct;
+  resetDifficulty: resetDifficulty;
+  resetAct: resetAct;
+  reset: reset;
+};
+const Difficulty = ({
   saveData,
   difficulty,
   updateQuest,
@@ -201,7 +241,7 @@ const Difficulty: DifficultyElement = ({
   resetDifficulty,
   resetAct,
   reset
-}) => {
+}: DifficultyProps) => {
   const actRows = quests.map(act => {
     return (
       <Act
@@ -254,7 +294,11 @@ const Difficulty: DifficultyElement = ({
   )
 }
 
-const Quests: QuestsElement = ({saveData, updateSaveData}) => {
+type QuestsProps = {
+  saveData: D2CS;
+  updateSaveData: updateSaveData;
+}
+const Quests = ({saveData, updateSaveData}: QuestsProps) => {
   const difficulties: Array<Difficulty> = [
     {key: 'quests_normal', all: false, label: 'Normal', acts: JSON.parse(JSON.stringify(quests))},
     {key: 'quests_nm', all: false, label: 'Nightmare', acts: JSON.parse(JSON.stringify(quests))},
@@ -263,8 +307,8 @@ const Quests: QuestsElement = ({saveData, updateSaveData}) => {
 
   const updateQuest: updateQuest = (difficulty, act, quest, state, newState) => {
     const newData = saveData
-    // @ts-ignore
-    const questReward: questReward = (difficulty, act, quest, state, attributes, amount, newState) => {
+
+    const questReward = (attributes: string[], amount: number, newState: boolean|null) => {
       if (newState === false) {
         amount *= -1;
       }
@@ -282,13 +326,13 @@ const Quests: QuestsElement = ({saveData, updateSaveData}) => {
       newState = !saveData.header[difficulty.key][act.key][quest.key][state.key];
     }
     if (['den_of_evil', 'radaments_lair'].indexOf(quest.key) > -1) {
-      questReward(difficulty.key, act.key, quest.key, state.key, ['unused_skill_points'], 1, newState);
+      questReward(['unused_skill_points'], 1, newState);
     } else if (quest.key === 'the_fallen_angel') {
-      questReward(difficulty.key, act.key, quest.key, state.key, ['unused_skill_points'], 2, newState);
+      questReward(['unused_skill_points'], 2, newState);
     } else if (quest.key === 'lam_esens_tome') {
-      questReward(difficulty.key, act.key, quest.key, state.key, ['unused_stats'], 5, newState);
+      questReward(['unused_stats'], 5, newState);
     } else if (quest.key === 'the_golden_bird') {
-      questReward(difficulty.key, act.key, quest.key, state.key, ['current_hp', 'max_hp'], 20, newState);
+      questReward(['current_hp', 'max_hp'], 20, newState);
     }
     if (act.all !== newState && act.all) {
       act.all = false;

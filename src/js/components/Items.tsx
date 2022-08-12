@@ -1,23 +1,23 @@
 import {Tab, Row, Col, Nav, Modal, Button} from 'react-bootstrap'
 import Grid from './inventory/Grid'
 import Equipped from './inventory/Equipped'
-import {
-  GridRow,
-  GridSettings,
-  RightMenu,
-  Items,
-  AddItemElement
-} from '../types/components/Items'
 import {equipped, belt, inventory, stash, cube} from '../Common'
 import * as React from 'react'
-import {D2CItem} from '../types/d2c'
-import {KeyValue} from '../types/d2'
+import {D2CItem, D2CS, ItemPack, KeyValue} from '../types'
 import utils from '../utils'
 import * as d2s from '@dschu012/d2s'
 import Item from './inventory/Item'
 import Select from 'react-select'
+import {onEvent, paste} from './App'
+import type {gridType} from '../hooks/Grid'
 
-const GridRow: GridRow = ({gridChange, label, rowProp, grid}) => {
+type GridRowProps = {
+  gridChange: (grid: gridType) => void;
+  label: string;
+  rowProp: string;
+  grid: gridType;
+}
+const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
   if (!grid[rowProp]) {
     grid[rowProp] = {
       w: 0,
@@ -62,7 +62,11 @@ const GridRow: GridRow = ({gridChange, label, rowProp, grid}) => {
   )
 }
 
-const GridSettings: GridSettings = ({gridChange, grid}) => {
+type GridSettingsProps = {
+  gridChange: (grid: gridType) => void;
+  grid: gridType;
+}
+const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
   return (
     <>
       <button type="button" className="btn btn-secondary dropdown-toggle" data-toggle="dropdown"/>
@@ -98,7 +102,14 @@ const GridSettings: GridSettings = ({gridChange, grid}) => {
   )
 }
 
-const RightMenu: RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}) => {
+type RightMenuProps = {
+  gridChange: (grid: gridType) => void;
+  grid: gridType;
+  clipboard: D2CItem | null;
+  paste: paste;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}: RightMenuProps) => {
   return (
     <div className="float-right">
       <GridSettings
@@ -124,7 +135,14 @@ const RightMenu: RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}
   )
 }
 
-const AddItemModal: AddItemElement = ({showModal, setShowModal, itemPack, isThemed, paste}) => {
+type AddItemModalProps = {
+  showModal: boolean;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  isThemed: boolean;
+  itemPack: ItemPack;
+  paste: paste;
+}
+const AddItemModal = ({showModal, setShowModal, itemPack, isThemed, paste}: AddItemModalProps) => {
   const [preview, setPreview] = React.useState<D2CItem | null>(null);
 
   const itemRows = itemPack.map(item => {
@@ -232,7 +250,20 @@ const AddItemModal: AddItemElement = ({showModal, setShowModal, itemPack, isThem
   )
 }
 
-const Items: Items = ({
+type ItemsProps = {
+  saveData: D2CS;
+  activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  gridChange: (grid: gridType) => void;
+  grid: gridType;
+  onEvent: onEvent;
+  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  clipboard: D2CItem | null;
+  paste: paste;
+  isThemed: boolean;
+  itemPack: ItemPack;
+}
+const Items = ({
   saveData,
   activeTab,
   setActiveTab,
@@ -244,7 +275,7 @@ const Items: Items = ({
   selectEvent,
   clipboard,
   paste,
-}) => {
+}: ItemsProps) => {
   const [showModal, setShowModal] = React.useState<boolean>(false);
 
   return (
@@ -323,9 +354,9 @@ const Items: Items = ({
       </Row>
       <Tab.Content>
         <Tab.Pane eventKey={'equipped'}>
-          {/* if="activeTab == 0 || activeTab == 5" */}
           <Equipped
             id={'Equipped'}
+            expansion={saveData.header.status.expansion}
             items={equipped(saveData)}
             selectEvent={selectEvent}
             onEvent={onEvent}

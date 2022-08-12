@@ -1,21 +1,16 @@
-//import * as React from 'react'
-import type {
-  sanitizeName,
-  updateStatus,
-  max,
-  min,
-  change,
-  changeLevel,
-  changeVitality,
-  changeEnergy,
-  StatsElement,
-  setValue
-} from '../types/components/Stats'
+import * as React from 'react'
 import utils from '../utils'
+import {D2CS} from '../types'
+import {updateSaveData} from './App'
+import {IAttributes} from '@dschu012/d2s/lib/d2/types'
 
-const Stats: StatsElement = ({saveData, updateSaveData}) => {
+type StatsProps = {
+  saveData: D2CS;
+  updateSaveData: updateSaveData;
+}
+const Stats = ({saveData, updateSaveData}: StatsProps) => {
   const stats = window.constants.constants.magical_properties
-  const sanitizeName: sanitizeName = (e) => {
+  const sanitizeName = (e: React.FormEvent<HTMLInputElement>) => {
     const name = e.currentTarget.value
     if (['_', '-'].includes(name.substring(0, 1))) {
       return
@@ -27,7 +22,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     newData.header.name = name
     updateSaveData(newData)
   }
-  const updateStatus: updateStatus = (key, value) => {
+  const updateStatus = (key: string, value: number) => {
     const newData = saveData
     switch (key) {
       case 'expansion':
@@ -48,13 +43,13 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     updateSaveData(newData)
   }
 
-  const setValue: setValue = (id, value, idx) => {
+  const setValue = (id: number, value: number, idx: string) => {
     let newData = saveData
     newData.attributes[idx] = value
     newData = change(id, newData.attributes, idx)
     updateSaveData(newData)
   }
-  const max: max = (id) => {
+  const max = (id: number) => {
     const stat = stats[id]
     let s = utils.shift(1, stat.cB) - 1
     if (stat.vS) {
@@ -62,7 +57,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     }
     return s
   }
-  const min: min = (id) => {
+  const min = (id: number) => {
     if (!id) {
       return 0
     }
@@ -72,7 +67,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     }
     return 0
   }
-  const change: change = (id, values, idx) => {
+  const change = (id: number, values: IAttributes, idx: string) => {
     const maxValue = max(id),
       minValue = min(id)
 
@@ -97,7 +92,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     return newData
   }
 
-  const changeLevel: changeLevel = (val, old) => {
+  const changeLevel = (val: number, old: number) => {
     const newData = saveData
     newData.header.level = val;
     newData.attributes.level = val;
@@ -122,7 +117,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     }
     return newData
   }
-  const changeVitality: changeVitality = (val, old) => {
+  const changeVitality = (val: number, old: number) => {
     const newData = saveData
     const change = val-old;
     for (const cCode in window.constants.constants.classes) {
@@ -138,7 +133,7 @@ const Stats: StatsElement = ({saveData, updateSaveData}) => {
     }
     return newData
   }
-  const changeEnergy: changeEnergy = (val, old) => {
+  const changeEnergy = (val: number, old: number) => {
     const newData = saveData
     const change = val-old;
     for (const cCode in window.constants.constants.classes) {

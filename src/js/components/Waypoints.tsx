@@ -1,15 +1,6 @@
 //import * as React from 'react'
-import {
-  updateWP,
-  updateAct,
-  updateDiff,
-  Act,
-  WaypointsElement,
-  Difficulty,
-  WaypointElement,
-  ActElement,
-  DifficultyElement
-} from '../types/components/Waypoints'
+import {D2CS} from '../types'
+import { updateSaveData } from './App';
 
 const waypoints: Array<Act> = [
   {
@@ -78,7 +69,34 @@ const waypoints: Array<Act> = [
   },
 ];
 
-const Waypoint: WaypointElement = ({saveData, difficulty, act, waypoint, updateWP}) => {
+type updateWP = (difficulty: Difficulty, act: Act, wp: State) => void
+type updateAct = (difficulty: Difficulty, act: Act) => void
+type updateDiff = (difficulty: Difficulty) => void
+
+interface State {
+  key: string;
+  label: string;
+}
+interface Act extends State {
+  all: boolean;
+  waypoints: Array<State>;
+}
+
+type Difficulty = {
+  key: string;
+  all: boolean;
+  label: string;
+  acts: Array<Act>;
+}
+
+type WaypointProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act;
+  waypoint: State;
+  updateWP: updateWP;
+};
+const Waypoint = ({saveData, difficulty, act, waypoint, updateWP}: WaypointProps) => {
   // @ts-ignore
   const defaultValue = saveData.header.waypoints[difficulty.key][act.key][waypoint.key]
 
@@ -104,7 +122,14 @@ const Waypoint: WaypointElement = ({saveData, difficulty, act, waypoint, updateW
   )
 }
 
-const Act: ActElement = ({saveData, difficulty, act, updateWP, updateAct}) => {
+type ActProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  act: Act;
+  updateWP: updateWP;
+  updateAct: updateAct;
+};
+const Act = ({saveData, difficulty, act, updateWP, updateAct}: ActProps) => {
   const waypointRows = act.waypoints.map(waypoint => {
     return (
       <Waypoint
@@ -143,13 +168,20 @@ const Act: ActElement = ({saveData, difficulty, act, updateWP, updateAct}) => {
   )
 }
 
-const Difficulty: DifficultyElement = ({
+type DifficultyProps = {
+  saveData: D2CS;
+  difficulty: Difficulty;
+  updateWP: updateWP;
+  updateDiff: updateDiff;
+  updateAct: updateAct;
+};
+const Difficulty = ({
   saveData,
   difficulty,
   updateWP,
   updateDiff,
   updateAct,
-}) => {
+}: DifficultyProps) => {
   const actRows = waypoints.map(act => {
     return (
       <Act
@@ -192,7 +224,11 @@ const Difficulty: DifficultyElement = ({
   )
 }
 
-const Waypoints: WaypointsElement = ({saveData, updateSaveData}) => {
+type WaypointsProps = {
+  saveData: D2CS;
+  updateSaveData: updateSaveData;
+}
+const Waypoints = ({saveData, updateSaveData}: WaypointsProps) => {
   const difficulties: Array<Difficulty> = [
     {key: 'normal', all: false, label: 'Normal', acts: JSON.parse(JSON.stringify(waypoints))},
     {key: 'nm', all: false, label: 'Nightmare', acts: JSON.parse(JSON.stringify(waypoints))},

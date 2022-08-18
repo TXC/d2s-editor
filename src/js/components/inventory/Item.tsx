@@ -32,16 +32,19 @@ const StatDescription = ({stat}: StatDescriptionProps) => {
   )
 }
 
+type itemElProp = {
+  onClick?: () => void
+  onContextMenu?: React.MouseEventHandler
+}
 type ItemProps = {
-  id: string;
   item: D2CItem;
   clazz?: string;
   clickEvent?: () => void;
   contextMenuEvent?: React.MouseEventHandler;
 }
-const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuEvent = undefined}: ItemProps) => {
+const Item = ({item, clazz = undefined, clickEvent = undefined, contextMenuEvent = undefined}: ItemProps) => {
   const [open, setOpen] = React.useState(false);
-  const ref = React.useRef(null)
+  const itemRef = React.useRef(null)
 
   const socketStyle = (idx: number) => {
     const y = [[50], [25, 75], [5, 50, 95]],
@@ -146,6 +149,7 @@ const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuE
     }
   }
   const dragStart = () => {
+    setOpen(false)
     localStorage.setItem('dragElement', JSON.stringify({
       uuid: window.uuid,
       item: item
@@ -163,17 +167,23 @@ const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuE
     return itemClass
   }
 
+  const itemDivProps: itemElProp = {}
+  if (clickEvent) {
+    itemDivProps.onClick = clickEvent
+  }
+  if (contextMenuEvent) {
+    itemDivProps.onContextMenu = contextMenuEvent
+  }
+
   let socketedItems: Array<JSX.Element> = []
   if (item.socketed_items) {
     socketedItems = [];
     for(let idx = 0; idx < item.total_nr_of_sockets; idx++) {
-      const style = socketStyle(idx)
       const socketedItem = (
         <div
-          key={`socket-${idx}`}
-          style={style}
-          ref={ref}
-          className={`socket ${item.socketed_items || !item.socketed_items[idx] ? 'empty-socket' : ''}`}
+          key={`${item.id}-socket-${idx}`}
+          style={socketStyle(idx)}
+          className={`socket ${item.socketed_items && !item.socketed_items[idx] ? 'empty-socket' : ''}`}
         >
           {item.socketed_items && item.socketed_items[idx] && (
             <img src={item.socketed_items[idx].src ?? ''} alt="socket"/>
@@ -194,8 +204,8 @@ const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuE
   }
 
   const popover = (
-    <Popover id={`itemInfo-${id}`}>
-      <Popover.Content>
+    <Popover>
+      <Popover.Body>
         <div
           className={`itemName ${itemNameClass(item)}`}
         >
@@ -248,21 +258,17 @@ const Item = ({id, item, clazz = undefined, clickEvent = undefined, contextMenuE
             Ethereal
           </div>
         )}
-        {item.total_nr_of_sockets && (
+        {item.total_nr_of_sockets > 0 && (
           <div className="noOfSockets blue">
             Socketed ({item.total_nr_of_sockets})
           </div>
         )}
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   )
 
   return (
-    <div
-      id={id}
-      onClick={clickEvent}
-      onContextMenu={contextMenuEvent}
-    >
+    <div {...itemDivProps} ref={itemRef}>
       <OverlayTrigger
         defaultShow={false}
         onToggle={() => setOpen(!open)}

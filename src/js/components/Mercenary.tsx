@@ -1,7 +1,5 @@
-import {EquippedItem, head, torso, right_hand, left_hand, mercenary, RCItemMenuId} from '../Common'
+import {EquippedItem, head, torso, right_hand, left_hand, mercenary} from '../Common'
 import utils from '../utils'
-import {contextMenu} from 'react-contexify'
-import type {itemRC} from './inventory/Item'
 import React from 'react'
 import {D2CS, D2CItem} from '../types'
 import {updateSaveData} from './App'
@@ -204,32 +202,27 @@ type ItemsProps = {
 }
 const Items = ({id, saveData, selectEvent}: ItemsProps) => {
   const items = mercenary(saveData)
-  const itemRC: itemRC = ($evt, item) => {
-    if (item) {
-      contextMenu.show({id: RCItemMenuId, event: $evt, props: {item: item}});
-    }
-  }
 
   return (
     <div className="inventory">
       <EquippedItem
         id={id} className={'head'} item={head(items)} position={1}
-        itemRC={itemRC} selectEvent={selectEvent}
+        selectEvent={selectEvent}
       />
 
       <EquippedItem
         id={id} className={'torso'} item={torso(items)} position={3}
-        itemRC={itemRC} selectEvent={selectEvent}
+        selectEvent={selectEvent}
       />
 
       <EquippedItem
         id={id} className={'right-hand weapon'} item={right_hand(items)} position={4}
-        itemRC={itemRC} selectEvent={selectEvent}
+        selectEvent={selectEvent}
       />
 
       <EquippedItem
         id={id} className={'left-hand weapon'} item={left_hand(items)} position={5}
-        itemRC={itemRC} selectEvent={selectEvent}
+        selectEvent={selectEvent}
       />
     </div>
   )

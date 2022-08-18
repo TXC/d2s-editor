@@ -5,6 +5,8 @@ const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 const env = process.env.NODE_ENV;
 const isDev = env === 'development';
+const createStyledComponentsTransformer = require('typescript-plugin-styled-components').default;
+const styledComponentsTransformer = createStyledComponentsTransformer();
 
 const cssLoader = {
   loader: 'css-loader',
@@ -58,7 +60,12 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: 'ts-loader'
+        exclude: [/node_modules/],
+        loader: 'ts-loader',
+        options: {
+          configFile: path.resolve(__dirname, 'tsconfig.webpack.json'),
+          getCustomTransformers: () => ({ before: [styledComponentsTransformer] })
+        }
       },
       {
         test: /\.jsx?$/,
@@ -102,7 +109,7 @@ module.exports = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      'process': 'process/browser',
     }),
     new CopyPlugin({
       patterns: [

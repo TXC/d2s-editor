@@ -90,17 +90,18 @@ const SingleNPC = ({saveData, difficulty, act, npc, updateNPC}: SingleNPCProps) 
       <label>{npc.label}</label>
       <ul>
         <li>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`NPCintro${difficulty.key}${npc.key}`}
               defaultChecked={defaultValue.intro}
               value={1}
               onChange={() => updateNPC(difficulty, act, npc, 'intro', !defaultValue.intro)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`NPCintro${difficulty.key}${npc.key}`}
             >
               Introduced
@@ -108,17 +109,18 @@ const SingleNPC = ({saveData, difficulty, act, npc, updateNPC}: SingleNPCProps) 
           </div>
         </li>
         <li>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`NPCcongrat${difficulty.key}${npc.key}`}
               defaultChecked={defaultValue.congrats}
               value={1}
               onChange={() => updateNPC(difficulty, act, npc, 'congrats', !defaultValue.congrats)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`NPCcongrat${difficulty.key}${npc.key}`}
             >
               Congratulated
@@ -155,17 +157,18 @@ const Act = ({saveData, difficulty, act, updateNPC, updateAct}: ActProps) => {
     <li>
       {npcRows.length > 0 && (
         <>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`NPCAct${difficulty.key}${act.key}`}
               defaultChecked={act.all}
               value={1}
               onChange={() => updateAct(difficulty, act)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`NPCAct${difficulty.key}${act.key}`}
             >
               {act.label}
@@ -211,17 +214,18 @@ const Difficulty = ({
     <div className="col-md-4 p-2">
       <ul>
         <li>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`NPCDifficulty${difficulty.key}`}
               defaultChecked={difficulty.all}
               value={1}
               onChange={() => updateDiff(difficulty)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`NPCDifficulty${difficulty.key}`}
             >
               {difficulty.label}
@@ -292,7 +296,7 @@ const NPC = ({saveData, updateSaveData}: NPCProps) => {
   })
 
   return (
-    <div className="form-row">
+    <div className="row">
       {difficultyRow.length > 0 ? difficultyRow : []}
     </div>
   )

@@ -8,9 +8,9 @@ import {RCGridMenuId, RCItemMenuId} from '../../Common'
 
 export type gridGridRC = ($evt: React.MouseEvent, w: number, h: number) => void;
 export type gridDragOver = (event: React.DragEvent) => void;
-export type gridDragEnter = (event: React.DragEvent, x: number, y: number) => void;
-export type gridDragLeave = (event: React.DragEvent, x: number, y: number) => void;
-export type gridDrop = (event: React.DragEvent, x: number, y: number) => void;
+export type gridDragEnter = (event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, x: number, y: number) => void;
+export type gridDragLeave = (event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, x: number, y: number) => void;
+export type gridDrop = (event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, x: number, y: number) => void;
 
 type GridColsProps = {
   id: string;
@@ -32,10 +32,10 @@ const GridCols = ({id, rowId, width, dragover, dragenter, dragleave, gridRC, dro
         key={`${id}-${colId}-${rowId}`}
         id={`${id}-${colId}-${rowId}`}
         className={`w-1 h-1 y-0 cell x-${colId}`}
-        onDrop={event => drop(event, colId, rowId)}
+        onDrop={event => drop(event, ref, colId, rowId)}
         onDragOver={dragover}
-        onDragEnter={event => dragenter(event, colId, rowId)}
-        onDragLeave={event => dragleave(event, colId, rowId)}
+        onDragEnter={event => dragenter(event, ref, colId, rowId)}
+        onDragLeave={event => dragleave(event, ref, colId, rowId)}
         onContextMenu={event => gridRC(event, colId, rowId)}
       />
     )
@@ -63,7 +63,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
     event.dataTransfer.dropEffect = 'move';
     return false;
   }
-  const dragenter: gridDragEnter = (event, x: number, y: number) => {
+  const dragenter: gridDragEnter = (event, ref, x: number, y: number) => {
     event.preventDefault()
     const dragElementData = localStorage.getItem('dragElement')
     if (dragElementData === null) {
@@ -73,7 +73,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
     onEvent({
       uuid: data.uuid,
       item: data.item,
-      id: `${id}-${x}-${y}`,
+      ref: ref,
       location: {
         location: 0,
         x: x - 1,
@@ -83,7 +83,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
       type: 'dragenter'
     });
   }
-  const dragleave: gridDragLeave = (event, x: number, y: number) => {
+  const dragleave: gridDragLeave = (event, ref, x: number, y: number) => {
     event.preventDefault();
     const dragElementData = localStorage.getItem('dragElement')
     if (dragElementData === null) {
@@ -93,7 +93,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
     onEvent({
       uuid: data.uuid,
       item: data.item,
-      id: `${id}-${x}-${y}`,
+      ref: ref,
       location: {
         location: 0,
         x: x - 1,
@@ -109,7 +109,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
   const gridRC: gridGridRC = ($evt, w: number, h: number) => {
     contextMenu.show({id: RCGridMenuId, event: $evt, props: {w: w - 1, h: h - 1}});
   }
-  const drop: gridDrop = (event, x: number, y: number) => {
+  const drop: gridDrop = (event, ref, x: number, y: number) => {
     event.preventDefault();
     const dragElementData = localStorage.getItem('dragElement')
     if (!dragElementData) {
@@ -119,7 +119,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
     onEvent({
       uuid: data.uuid,
       item: data.item,
-      id: `${id}-${x}-${y}`,
+      ref: ref,
       location: {
         location: 0,
         x: x - 1,
@@ -156,7 +156,6 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
     return (
       <Item
         key={`item-${idx}`}
-        id={`item-${idx}`}
         item={d2item}
         clickEvent={() => {
           selectEvent(d2item)

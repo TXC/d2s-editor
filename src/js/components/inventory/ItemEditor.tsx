@@ -11,16 +11,14 @@ import {
 } from '../../types'
 import * as React from 'react'
 import {locationType, onEvent} from '../App'
+import DropDown, {singleProperty} from '../DropDown'
 
 type ItemRowType = {
   n?: string;
   eq1n?: string;
   eq2n?: string;
 }
-type ItemRow = [
-  key: string,
-  object: ItemRowType
-]
+type ItemRow = [string, ItemRowType]
 type ItemBasicProps = {
   id: number|string;
   item: D2CItem;
@@ -53,25 +51,47 @@ type SetItemRow = {
   i: number;
 }
 
+const locationsRows = [
+  { value: 0, label: 'Stored' },
+  { value: 1, label: 'Equipped' },
+  { value: 4, label: 'Cursor' }
+]
+const equippedLocationRows = [
+  { value: 1, label: 'Head' },
+  { value: 2, label: 'Neck' },
+  { value: 3, label: 'Torso' },
+  { value: 4, label: 'Right Hand' },
+  { value: 5, label: 'Left Hand' },
+  { value: 6, label: 'Right Finger' },
+  { value: 7, label: 'Left Finger' },
+  { value: 8, label: 'Waist' },
+  { value: 9, label: 'Boots' },
+  { value: 10, label: 'Gloves' },
+  { value: 11, label: 'Alternate Right Hand' },
+  { value: 12, label: 'Alternate Left Hand' }
+]
+const storagePagesRows = [
+  { value: 1, label: 'Inventory' },
+  { value: 4, label: 'Cube' },
+  { value: 5, label: 'Stash' }
+]
+
 const ItemRows = (entries: Array<ItemRowType>) => {
   const Items: Array<ItemRow> = Object.entries(entries)
-  const ItemsRows: Array<JSX.Element> = []
+  const ItemsRows: Array<singleProperty> = []
   for(const [key, object] of Items) {
     if (!object.n) {
       continue
     }
-    const ItemRow = (
-      <option value={key} key={key}>{object.n}</option>
-    )
-    ItemsRows.push(ItemRow)
+    ItemsRows.push({value: key, label: object.n})
   }
   return ItemsRows
 }
 
 const ItemBooleanAttributes = ({id, item, setSelected}: ItemBasicProps) => {
   return (
-    <div className="form-row mb-3">
-      <div className="col-md-12">
+    <div className="row mb-3">
+      <div className="col-12">
         <div className="form-check form-check-inline">
           <input
             className="form-check-input"
@@ -153,119 +173,88 @@ const ItemBooleanAttributes = ({id, item, setSelected}: ItemBasicProps) => {
 }
 
 const ItemLocation = ({id, location, setLocation, onMove}: ItemLocationProps) => {
-  const locationsRows = [
-    { key: 0, value: 'Stored' },
-    { key: 1, value: 'Equipped' },
-    { key: 4, value: 'Cursor' }
-  ].map(l => (
-    <option value={l.key} key={`Location${l.key}`}>{l.value}</option>
-  ))
-  const equippedLocationRows = [
-    { key: 1, value: 'Head' },
-    { key: 2, value: 'Neck' },
-    { key: 3, value: 'Torso' },
-    { key: 4, value: 'Right Hand' },
-    { key: 5, value: 'Left Hand' },
-    { key: 6, value: 'Right Finger' },
-    { key: 7, value: 'Left Finger' },
-    { key: 8, value: 'Waist' },
-    { key: 9, value: 'Boots' },
-    { key: 10, value: 'Gloves' },
-    { key: 11, value: 'Alternate Right Hand' },
-    { key: 12, value: 'Alternate Left Hand' }
-  ].map(l => (
-    <option value={l.key} key={`EquipLocation${l.key}`}>{l.key}</option>
-  ))
-  const storagePagesRows = [
-    { key: 1, value: 'Inventory' },
-    { key: 4, value: 'Cube' },
-    { key: 5, value: 'Stash' }
-  ].map(l => (
-    <option value={l.key} key={`StoragePage${l.key}`}>{l.value}</option>
-  ))
-
   return (
-    <div className="form-row">
-      <div className="col-md-4">
-        <label htmlFor={`Location${id}`}>Location</label>
-        <select
-          className="form-control"
-          id={`Location${id}`}
-          defaultValue={location.location}
+    <div className="row g-3">
+      <div className="col-4">
+        <label className="form-label" htmlFor={`Location${id}`}>Location</label>
+        <DropDown
           onChange={e => {
-            const newData = Object.assign({}, location, {location: Number(e.currentTarget.value)})
+            if (e === null) {
+              return
+            }
+            const newData = Object.assign({}, location, {location: Number(e.value)})
             setLocation(newData)
           }}
-        >
-          { locationsRows.length > 0 ? locationsRows : [] }
-        </select>
+          value={locationsRows.filter(row => row.value === location.location)}
+          options={locationsRows}
+        />
       </div>
       { location.location === 1 && (
-        <div className="col-md-4">
-          <label htmlFor={`EquippedLocation${id}`}>Equipped Location</label>
-          <select
-            className="form-control"
-            id={`EquippedLocation${id}`}
-            defaultValue={location.equipped_location}
+        <div className="col-6">
+          <label className="form-label" htmlFor={`EquippedLocation${id}`}>Equipped Location</label>
+          <DropDown
             onChange={e => {
-              const newData = Object.assign({}, location, {equipped_location: Number(e.currentTarget.value)})
+              if (e === null) {
+                return
+              }
+              const newData = Object.assign({}, location, {equipped_location: Number(e.value)})
               setLocation(newData)
             }}
-          >
-            { equippedLocationRows.length > 0 ? equippedLocationRows : [] }
-          </select>
+            value={equippedLocationRows.filter(row => row.value === location.equipped_location)}
+            options={equippedLocationRows}
+          />
         </div>
       )}
       { location.location === 0 && (
         <>
-          <div className="col-md-2">
-            <label htmlFor={`StorageLocation${id}`}>Storage Location</label>
-            <select
-              className="form-control"
-              id={`StorageLocation${id}`}
-              defaultValue={location.storage_page}
+          <div className="col-3">
+            <label className="form-label" htmlFor={`StorageLocation${id}`}>Storage Location</label>
+            <DropDown
               onChange={e => {
-                const newData = Object.assign({}, location, {storage_page: Number(e.currentTarget.value)})
+                if (e === null) {
+                  return
+                }
+                const newData = Object.assign({}, location, {storage_page: Number(e.value)})
                 setLocation(newData)
               }}
-            >
-              { storagePagesRows.length > 0 ? storagePagesRows : [] }
-            </select>
-          </div>
-          <div className="col-md-1">
-            <label htmlFor={`X${id}`}>X</label>
-            <input
-              type="number"
-              min="0"
-              max="20"
-              className="form-control"
-              id={`X${id}`}
-              defaultValue={location.x}
-              onChange={e => {
-                const newData = Object.assign({}, location, {x: Number(e.currentTarget.value)})
-                setLocation(newData)
-              }}
+              value={storagePagesRows.filter(row => row.value === location.storage_page)}
+              options={storagePagesRows}
             />
           </div>
-          <div className="col-md-1">
-            <label htmlFor={`Y${id}`}>Y</label>
-            <input
-              type="number"
-              min="0"
-              max="20"
-              className="form-control"
-              id={`Y${id}`}
-              defaultValue={location.y}
-              onChange={e => {
-                const newData = Object.assign({}, location, {y: Number(e.currentTarget.value)})
-                setLocation(newData)
-              }}
-            />
+          <div className="col-3">
+            <label className="form-label">Storage position</label>
+            <div className="input-group">
+              <input
+                type="number"
+                min="0"
+                max="20"
+                className="form-control"
+                id={`X${id}`}
+                defaultValue={location.x}
+                onChange={e => {
+                  const newData = Object.assign({}, location, {x: Number(e.currentTarget.value)})
+                  setLocation(newData)
+                }}
+              />
+              <div className="input-group-text">,</div>
+              <input
+                type="number"
+                min="0"
+                max="20"
+                className="form-control"
+                id={`Y${id}`}
+                defaultValue={location.y}
+                onChange={e => {
+                  const newData = Object.assign({}, location, {y: Number(e.currentTarget.value)})
+                  setLocation(newData)
+                }}
+              />
+            </div>
           </div>
         </>
       )}
-      <div>
-        <label>&nbsp;</label>
+      <div className="col-md-2">
+        <label className="form-label">&nbsp;</label>
         <button
           type="button"
           className="form-control btn btn-primary"
@@ -279,9 +268,19 @@ const ItemLocation = ({id, location, setLocation, onMove}: ItemLocationProps) =>
 }
 
 const ItemType = ({id, item, setSelected}: ItemBasicProps) => {
-  const armorItemsRows = ItemRows(window.constants.constants.armor_items)
-  const weaponItemsRows = ItemRows(window.constants.constants.weapon_items)
-  const otherItemsRows = ItemRows(window.constants.constants.other_items)
+  const itemsRows = [
+    {
+      label: 'Armor',
+      options: ItemRows(window.constants.constants.armor_items)
+    },
+    {
+      label: 'Weapons',
+      options: ItemRows(window.constants.constants.weapon_items)
+    }, {
+      label: 'Misc',
+      options: ItemRows(window.constants.constants.other_items)
+    }
+  ]
 
   const max = (id: D2CItem) => {
     if (!window.constants.constants.other_items[id.type]) {
@@ -298,33 +297,31 @@ const ItemType = ({id, item, setSelected}: ItemBasicProps) => {
     return Number(stat.cMinStack ?? 0)
   }
 
+  let itemRow
+  itemsRows.forEach(r => {
+    const x = r.options.filter(row => row.value == item.type)
+    if (x.length > 0) {
+      itemRow = x.pop()
+    }
+  })
   return (
-    <div className="form-row">
-      <div className="col-md-6">
-        <label htmlFor={`Type${id}`}>Type</label>
-        <select
-          className="form-control"
-          id={`Type${id}`}
-          defaultValue={item.type}
-          onChange={e => {
-            const newItem = item
-            newItem.type = e.currentTarget.value
-            setSelected(newItem)
+    <div className="row g-3">
+      <div className="col-6">
+        <label className="form-label" htmlFor={`Type${id}`}>Type</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.type = String(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          <optgroup label="Armor">
-            { armorItemsRows.length > 0 ? armorItemsRows : [] }
-          </optgroup>
-          <optgroup label="Weapons">
-            { weaponItemsRows.length > 0 ? weaponItemsRows : [] }
-          </optgroup>
-          <optgroup label="Misc">
-            { otherItemsRows.length > 0 ? otherItemsRows : [] }
-          </optgroup>
-        </select>
+          value={itemRow}
+          options={itemsRows}
+        />
       </div>
-      <div className="col-md-4">
-        <label htmlFor={`Quantity${id}`}>Quantity</label>
+      <div className="col-6">
+        <label className="form-label" htmlFor={`Quantity${id}`}>Quantity</label>
         <input
           type="number"
           className="form-control"
@@ -346,22 +343,20 @@ const ItemType = ({id, item, setSelected}: ItemBasicProps) => {
 
 const ItemComplexItem = ({id, item, setSelected}: ItemBasicProps) => {
   const rarityRows = [
-    { key: 1, value: 'Low' },
-    { key: 2, value: 'Normal' },
-    { key: 3, value: 'Superior' },
-    { key: 4, value: 'Magic' },
-    { key: 5, value: 'Set' },
-    { key: 6, value: 'Rare' },
-    { key: 7, value: 'Unique' },
-    { key: 8, value: 'Crafted' }
-  ].map(r => (
-    <option value={r.key} key={r.key}>{r.key} - {r.value}</option>
-  ))
+    { value: 1, label: 'Low' },
+    { value: 2, label: 'Normal' },
+    { value: 3, label: 'Superior' },
+    { value: 4, label: 'Magic' },
+    { value: 5, label: 'Set' },
+    { value: 6, label: 'Rare' },
+    { value: 7, label: 'Unique' },
+    { value: 8, label: 'Crafted' }
+  ]
 
   return (
-    <div className="form-row">
-      <div className="col-md-4">
-        <label htmlFor={`ILvl${id}`}>Item Level</label>
+    <div className="row g-3">
+      <div className="col-4">
+        <label className="form-label" htmlFor={`ILvl${id}`}>Item Level</label>
         <input
           type="number"
           className="form-control"
@@ -374,24 +369,23 @@ const ItemComplexItem = ({id, item, setSelected}: ItemBasicProps) => {
           }}
         />
       </div>
-      <div className="col-md-4">
-        <label htmlFor={`Rarity${id}`}>Rarity</label>
-        <select
-          className="form-control"
-          id={`Rarity${id}`}
-          defaultValue={item.quality}
-          onChange={e => {
-            const newItem = item
-            newItem.quality = Number(e.currentTarget.value)
-            setSelected(newItem)
+      <div className="col-4">
+        <label className="form-label" htmlFor={`Rarity${id}`}>Rarity</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.quality = Number(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          { rarityRows.length > 0 ? rarityRows : [] }
-        </select>
+          value={rarityRows.filter(row => row.value === item.quality).pop()}
+          options={rarityRows}
+        />
       </div>
       { item.socketed !== 0 && (
-        <div className="col-md-4">
-          <label htmlFor={`Sockets${id}`}>Sockets</label>
+        <div className="col-4">
+          <label className="form-label" htmlFor={`Sockets${id}`}>Sockets</label>
           <input
             type="number"
             className="form-control"
@@ -413,9 +407,9 @@ const ItemComplexItem = ({id, item, setSelected}: ItemBasicProps) => {
 
 const ItemCategories = ({id, item, setSelected}: ItemBasicProps) => {
   return (
-    <div className="form-row">
-      <div className="col-md-4">
-        <label htmlFor={`curDur${id}`}>Current durability</label>
+    <div className="row g-3">
+      <div className="col-4">
+        <label className="form-label" htmlFor={`curDur${id}`}>Current durability</label>
         <input
           type="number"
           className="form-control"
@@ -428,8 +422,8 @@ const ItemCategories = ({id, item, setSelected}: ItemBasicProps) => {
           }}
         />
       </div>
-      <div className="col-md-4">
-        <label htmlFor={`maxDur${id}`}>Maximum durability</label>
+      <div className="col-4">
+        <label className="form-label" htmlFor={`maxDur${id}`}>Maximum durability</label>
         <input
           type="number"
           className="form-control"
@@ -444,8 +438,8 @@ const ItemCategories = ({id, item, setSelected}: ItemBasicProps) => {
         <small className="text-muted form-text">(0 = indestructible)</small>
       </div>
       { item.defense_rating && (
-        <div className="col-md-4">
-          <label htmlFor={`Def${id}`}>Defense</label>
+        <div className="col-4">
+          <label className="form-label" htmlFor={`Def${id}`}>Defense</label>
           <input
             type="number"
             className="form-control"
@@ -460,8 +454,8 @@ const ItemCategories = ({id, item, setSelected}: ItemBasicProps) => {
         </div>
       )}
       { item.base_damage && item.base_damage.mindam && item.base_damage.maxdam && (
-        <div className="col-md-4">
-          <label htmlFor={`OHD${id}`}>One-Hand Damage</label>
+        <div className="col-4">
+          <label className="form-label" htmlFor={`OHD${id}`}>One-Hand Damage</label>
           <input
             type="text"
             className="form-control"
@@ -472,8 +466,8 @@ const ItemCategories = ({id, item, setSelected}: ItemBasicProps) => {
         </div>
       )}
       { item.base_damage && item.base_damage.twohandmindam && item.base_damage.twohandmaxdam && (
-        <div className="col-md-4">
-          <label htmlFor={`THD${id}`}>Two-Hand Damage</label>
+        <div className="col-4">
+          <label className="form-label" htmlFor={`THD${id}`}>Two-Hand Damage</label>
           <input
             type="text"
             className="form-control"
@@ -491,50 +485,54 @@ const ItemMagicSettings = ({id, item, setSelected}: ItemBasicProps) => {
   const prefixRows = window.constants.constants.magic_prefixes
     .map((e: MagicPrefix, i: number)=> { return { i:i, v:e }})
     .filter((e: MagicSuffixRow) => typeof e.v?.n !== 'undefined')
-    .map((s: MagicPrefixRow) => (
-    <option value={s.v?.n ?? ''} key={s.i}>{s.i} - {s.v?.n}</option>
-  ))
+    .map((s: MagicPrefixRow) => {
+      return {
+        value: s.v?.n ?? '',
+        label: `${s.i} - ${s.v?.n}`
+      }
+    })
   const suffixRows = window.constants.constants.magic_suffixes
     .map((e: MagicSuffix, i: number) => { return { i:i, v:e }})
     .filter((e: MagicSuffixRow) => typeof e.v?.n !== 'undefined')
-    .map((s: MagicSuffixRow) => (
-        <option value={s.v?.n ?? ''} key={s.i}>{s.i} - {s.v?.n}</option>
-      )
-    )
+    .map((s: MagicSuffixRow) => {
+      return {
+        value: s.v?.n ?? '',
+        label: `${s.i} - ${s.v?.n}`
+      }
+    })
+
+  prefixRows.unshift({value: '0', label: 'None'})
+  suffixRows.unshift({value: '0', label: 'None'})
 
   return (
-    <div className="form-row">
-      <div className="col-md-6">
-        <label htmlFor={`Prefix${id}`}>Prefix</label>
-        <select
-          className="form-control"
-          id={`Prefix${id}`}
-          defaultValue={item.magic_prefix_name}
-          onChange={e => {
-            const newItem = item
-            newItem.magic_prefix_name = String(e.currentTarget.value)
-            setSelected(newItem)
+    <div className="row g-3">
+      <div className="col-6">
+        <label className="form-label" htmlFor={`Prefix${id}`}>Prefix</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.magic_prefix_name = String(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          <option value="0">None</option>
-          { prefixRows.length > 0 ? prefixRows : [] }
-        </select>
+          value={prefixRows.filter(row => row.value === item.magic_prefix_name)}
+          options={prefixRows}
+        />
       </div>
-      <div className="col-md-6">
-        <label htmlFor={`Suffix${id}`}>Suffix</label>
-        <select
-          className="form-control"
-          id={`Suffix${id}`}
-          defaultValue={item.magic_suffix_name}
-          onChange={e => {
-            const newItem = item
-            newItem.magic_suffix_name = String(e.currentTarget.value)
-            setSelected(newItem)
+      <div className="col-6">
+        <label className="form-label" htmlFor={`Suffix${id}`}>Suffix</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.magic_suffix_name = String(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          <option value="0">None</option>
-          { suffixRows.length > 0 ? suffixRows : [] }
-        </select>
+          value={suffixRows.filter(row => row.value === item.magic_suffix_name)}
+          options={suffixRows}
+        />
       </div>
     </div>
   )
@@ -544,41 +542,43 @@ const ItemRareCraftedSettings = ({id, item, setSelected}: ItemBasicProps) => {
   const rareNamesRows = window.constants.constants.rare_names
     .map((e: RareName, i: number)=> { return { i:i, v:e }})
     .filter((e: RareNameRow) => typeof e.v?.n !== 'undefined')
-    .map((s: RareNameRow) => (
-      <option value={s.v?.n ?? ''} key={s.i}>{s.i} - {s.v?.n}</option>
-    ))
+    .map((s: RareNameRow) => {
+      return {
+        value: s.v?.n ?? '',
+        label: `${s.i} - ${s.v?.n}`
+      }
+    })
 
   return (
-    <div className="form-row">
-      <div className="col-md-6">
-        <label htmlFor={`RareName1-${id}`}>Rare Name 1</label>
-        <select
-          className="form-control"
-          id={`RareName1-${id}`}
-          defaultValue={item.rare_name}
-          onChange={e => {
-            const newItem = item
-            newItem.rare_name = String(e.currentTarget.value)
-            setSelected(newItem)
+    <div className="row g-3">
+      <div className="col-6">
+        <label className="form-label" htmlFor={`RareName1-${id}`}>Rare Name 1</label>
+
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.rare_name = String(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          { rareNamesRows.length > 0 ? rareNamesRows : [] }
-        </select>
+          value={rareNamesRows.filter(row => row.value === item.rare_name)}
+          options={rareNamesRows}
+        />
       </div>
-      <div className="col-md-6">
-        <label htmlFor={`RareName2-${id}`}>Rare Name 2</label>
-        <select
-          className="form-control"
-          id={`RareName2-${id}`}
-          defaultValue={item.rare_name2}
-          onChange={e => {
-            const newItem = item
-            newItem.rare_name2 = String(e.currentTarget.value)
-            setSelected(newItem)
+      <div className="col-6">
+        <label className="form-label" htmlFor={`RareName2-${id}`}>Rare Name 2</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.rare_name2 = String(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          { rareNamesRows.length > 0 ? rareNamesRows : [] }
-        </select>
+          value={rareNamesRows.filter(row => row.value === item.rare_name2)}
+          options={rareNamesRows}
+        />
       </div>
     </div>
   )
@@ -588,26 +588,28 @@ const ItemSetItemSettings = ({id, item, setSelected}: ItemBasicProps) => {
   const setItemsRows = window.constants.constants.set_items
     .map((e: SetItem, i: number)=> { return { i:i, v:e }})
     .filter((e: SetItemRow) => typeof e.v?.n !== 'undefined')
-    .map((s: SetItemRow) => (
-      <option value={s.i} key={s.i}>{s.i} - {s.v?.n}</option>
-    ))
+    .map((s: SetItemRow) => {
+      return {
+        value: s.i,
+        label: `${s.i} - ${s.v?.n}`
+      }
+    })
 
   return (
-    <div className="form-row">
-      <div className="col-md-12">
-        <label htmlFor={`SetName${id}`}>Set Name</label>
-        <select
-          className="form-control"
-          id={`SetName${id}`}
-          defaultValue={item.set_id}
-          onChange={e => {
-            const newItem = item
-            newItem.set_id = Number(e.currentTarget.value)
-            setSelected(newItem)
+    <div className="row g-3">
+      <div className="col-12">
+        <label className="form-label" htmlFor={`SetName${id}`}>Set Name</label>
+        <DropDown
+          onChange={option => {
+            if (option !== null) {
+              const newItem = item
+              newItem.set_id = Number(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          { setItemsRows.length > 0 ? setItemsRows : [] }
-        </select>
+          value={setItemsRows.filter(row => row.value === item.set_id)}
+          options={setItemsRows}
+        />
       </div>
     </div>
   )
@@ -617,26 +619,28 @@ const ItemUniqueItemSettings = ({id, item, setSelected}: ItemBasicProps) => {
   const unqItemsRows = window.constants.constants.unq_items
     .map((e: UniqueItem, i: number)=> { return { i:i, v:e }})
     .filter((e: UniqueItemRow) => typeof e.v?.n !== 'undefined')
-    .map((s: UniqueItemRow) => (
-        <option value={s.i} key={s.i}>{s.i} - {s.v?.n}</option>
-    ))
+    .map((s: UniqueItemRow) => {
+      return {
+        value: s.i,
+        label: `${s.i} - ${s.v?.n}`
+      }
+    })
 
   return (
-    <div className="form-row">
-      <div className="col-md-4">
-        <label htmlFor={`UniqueName${id}`}>Unique Name</label>
-        <select
-          className="form-control"
-          id={`UniqueName${id}`}
-          defaultValue={item.unique_id}
-          onChange={e => {
-            const newItem = item
-            newItem.unique_id = Number(e.currentTarget.value)
-            setSelected(newItem)
+    <div className="row g-3">
+      <div className="col-4">
+        <label className="form-label" htmlFor={`UniqueName${id}`}>Unique Name</label>
+        <DropDown
+          onChange={option=> {
+            if (option !== null) {
+              const newItem = item
+              newItem.unique_id = Number(option.value)
+              setSelected(newItem)
+            }
           }}
-        >
-          { unqItemsRows.length > 0 ? unqItemsRows : [] }
-        </select>
+          value={unqItemsRows.filter(row => row.value === item.unique_id)}
+          options={unqItemsRows}
+        />
       </div>
     </div>
   )
@@ -661,7 +665,7 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
   let setAttributesList: Array<JSX.Element> = []
   if (item.set_attributes) {
     setAttributesList = item.set_attributes.map((attribute, idx) => (
-      <div key={`SetAttr${idx}`} className="mt-3 border border-light">
+      <div key={`${id}SetAttr${idx}`} className="mt-3 border border-light">
         <div>{`Set Stats List ${idx}`}</div>
         <ItemStatsEditor
           key={`SetAttributes-${idx}`}
@@ -680,7 +684,7 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
   let socketedItemsList: Array<JSX.Element> = []
   if (item.socketed_items) {
     socketedItemsList = item.socketed_items.map((_, idx) => (
-    <div key={`Socketed${idx}`} className="mt-3 border border-light">
+    <div key={`${id}Socketed${idx}`} className="mt-3 border border-light">
         <div>{`Socketed Item ${idx}`}</div>
         <ItemStatsEditor
           key={`SocketedAttributes-${idx}`}
@@ -697,16 +701,15 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
   }
 
   return (
-    <div>
-      <div className="row d-flex justify-content-center mb-3">
+    <div className="container">
+      <div className="d-flex justify-content-center mb-3">
         <Item
-          id="item-editor"
           item={item}
           clazz="item item-edit"
         />
       </div>
       <ItemBooleanAttributes id={id} item={item} setSelected={setSelected} />
-      {/* <div className="form-row" ref="moveItemErrors"/> */ }
+      {/* <div className="row" ref="moveItemErrors"/> */ }
       { location && (
         <ItemLocation
           id={id}
@@ -717,7 +720,7 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
       )}
       <ItemType id={id} item={item} setSelected={setSelected}/>
       { !item.simple_item && (
-      <div>
+      <>
         <ItemComplexItem id={id} item={item} setSelected={setSelected}/>
 
         { item.categories && (item.categories.indexOf('Any Armor') > -1 || item.categories.indexOf('Weapon') > -1) && (
@@ -737,13 +740,13 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
           <ItemUniqueItemSettings id={id} item={item} setSelected={setSelected}/>
         )}
 
-        { item.magic_attributes && (
+        { item.magic_attributes && item.magic_attributes.length > 0 && (
           <div id="magic_attributes" className="mt-3 border border-light">
             <div>Item Stats</div>
             <ItemStatsEditor
               key="MagicAttributes"
               itemStats={item.magic_attributes}
-              id={`Magic${id}`}
+              id={`${id}Magic`}
               updateStats={(data: types.IMagicProperty[]) => {
                 const newItem = item
                 newItem.magic_attributes = data
@@ -752,13 +755,13 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
             />
           </div>
         )}
-        { item.runeword_attributes && (
+        { item.runeword_attributes && item.runeword_attributes.length > 0 && (
           <div id="runeword_attributes" className="mt-3 border border-light">
             <div>Runeword Stats</div>
             <ItemStatsEditor
               key="RunewordAttributes"
               itemStats={item.runeword_attributes}
-              id={`Runeword${id}`}
+              id={`${id}Runeword`}
               updateStats={(data: types.IMagicProperty[]) => {
                 const newItem = item
                 newItem.runeword_attributes = data
@@ -767,17 +770,17 @@ const ItemEditor = ({id, item, setSelected, location, setLocation, callOnEvent}:
             />
           </div>
         )}
-        { item.set_attributes && (
+        { item.set_attributes && item.set_attributes.length > 0 && (
           <div id="set_attributes">
             { setAttributesList.length > 0 ? setAttributesList : [] }
           </div>
         )}
-        { item.socketed_items && (
+        { item.socketed_items && item.socketed_items.length > 0 && (
           <div id="socketed_items">
             { socketedItemsList.length > 0 ? socketedItemsList : [] }
           </div>
         )}
-      </div>
+      </>
       )}
   </div>
   )

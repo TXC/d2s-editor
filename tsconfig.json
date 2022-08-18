@@ -9,7 +9,7 @@
     "declaration": true,
     "sourceMap": true,
     "removeComments": true,
-    "noEmit": false,
+    "noEmit": true,
     //"isolatedModules": true,
     "strict": true,
     "noUnusedLocals": true,

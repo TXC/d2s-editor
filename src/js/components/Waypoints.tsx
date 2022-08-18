@@ -102,17 +102,18 @@ const Waypoint = ({saveData, difficulty, act, waypoint, updateWP}: WaypointProps
 
   return (
     <li>
-      <div className="custom-control custom-switch">
+      <div className="form-check form-switch">
         <input
-          className="custom-control-input"
+          className="form-check-input"
           type="checkbox"
+          role="switch"
           id={`Waypoint${difficulty.key}${act.key}${waypoint.key}`}
           defaultChecked={defaultValue}
           value={1}
           onChange={() => updateWP(difficulty, act, waypoint)}
         />
         <label
-          className="custom-control-label"
+          className="form-check-label"
           htmlFor={`Waypoint${difficulty.key}${act.key}${waypoint.key}`}
         >
           {waypoint.label}
@@ -145,17 +146,18 @@ const Act = ({saveData, difficulty, act, updateWP, updateAct}: ActProps) => {
 
   return (
     <li>
-      <div className="custom-control custom-switch">
+      <div className="form-check form-switch">
         <input
-          className="custom-control-input"
+          className="form-check-input"
           type="checkbox"
+          role="switch"
           id={`Act${difficulty.key}${act.key}`}
           defaultChecked={act.all}
           value={1}
           onChange={() => updateAct(difficulty, act)}
         />
         <label
-          className="custom-control-label"
+          className="form-check-label"
           htmlFor={`Act${difficulty.key}${act.key}`}
         >
           {act.label}
@@ -199,17 +201,18 @@ const Difficulty = ({
     <div className="col-md-4 p-2">
       <ul>
         <li>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`Difficulty${difficulty.key}`}
               defaultChecked={difficulty.all}
               value={1}
               onChange={() => updateDiff(difficulty)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`Difficulty${difficulty.key}`}
             >
               {difficulty.label}
@@ -279,7 +282,7 @@ const Waypoints = ({saveData, updateSaveData}: WaypointsProps) => {
   })
 
   return (
-    <div className="form-row">
+    <div className="row">
       {difficultyRow.length > 0 ? difficultyRow : []}
     </div>
   )

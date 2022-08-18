@@ -15,6 +15,7 @@ const Skill = ({colId, saveData, updateSkill}: SkillProps) => {
       <div key={`Skill${saveData.skills[colId].id}`} className="m-3">
         <label
           htmlFor={`Skill${saveData.skills[colId].id}`}
+          className="form-label"
         >
           {saveData.skills[colId].name}
         </label>
@@ -105,21 +106,19 @@ const Skills = ({saveData, updateSaveData}: SkillsProps) => {
 
   return (
     <div>
-      <div className="form-row">
+      <div className="row mb-3">
         { Rows.length > 0 ? Rows : [] }
       </div>
-      <br />
-      <div className="form-row">
+
+      <div className="row">
         <div className={'col-md-3 input-group'}>
-          <div className="input-group-prepend">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={setAll}
-            >
-              Set All To
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={setAll}
+          >
+            Set All To
+          </button>
           <input
             className="form-control"
             type="number"

@@ -1,5 +1,8 @@
 import utils from '../../utils'
 import {types} from '@dschu012/d2s'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faTrashCan} from '@fortawesome/free-regular-svg-icons'
+import DropDown from '../DropDown'
 
 const stats = window.constants.constants.magical_properties
 const skills = window.constants.constants.skills.map((e,i)=> { return { i:i, v:e }}).filter(e => e.v != null && e.v.s != null)
@@ -65,6 +68,26 @@ const numValues = (id: number) => {
   return 1
 }
 
+const statRows = stats.map((stat, idx) => {
+  return {
+    value: idx,
+    label: `${idx} - ${stat.s}`
+  }
+})
+const classRows = classes.map((c, idx) => {
+  return {
+    value: idx,
+    label: c.co
+  }
+})
+const skillRows = skills.map(s => {
+  return {
+    value: s.i,
+    label: s.v.s
+  }
+})
+
+
 type StatValueProps = {
   itemStat: types.IMagicProperty;
   rowId: number;
@@ -72,66 +95,59 @@ type StatValueProps = {
   i: number;
 }
 const ClassValues = ({itemStat, rowId, update, i}: StatValueProps) => {
-  const classRows = classes.map((c, idx) => (
-    <option value={idx} key={idx}>{c.co}</option>
-  ))
-
   return (
-    <div className="col-md-2" id={`classStat${itemStat.id}-${i}`}>
-      <select
-        id={`Stat${itemStat.id}Value${i}`}
-        className="form-control"
-        defaultValue={itemStat.values[i]}
-        onChange={e => {
-          itemStat.values[i] = Number(e.currentTarget.value)
-          update(itemStat, rowId)
+    <div className="col-4" id={`classStat${itemStat.id}-${i}`}>
+      <DropDown
+        onChange={option => {
+          if (option !== null) {
+            itemStat.values[i] = Number(option.value)
+            update(itemStat, rowId)
+          }
         }}
-      >
-        { classRows.length > 0 ? classRows : [] }
-      </select>
+        value={classRows[itemStat.values[i]]}
+        options={classRows}
+      />
     </div>
   )
 }
 
 const ClassSkillValues = ({itemStat, rowId, update, i}: StatValueProps) => {
-  const classSkillRows = classes[itemStat.values[i]].ts.map((t: string, idx: number) => (
-    <option value={idx} key={idx}>{t}</option>
-  ))
+  const classSkillRows = classes[itemStat.values[i]].ts.map((t: string, idx: number) => {
+    return {
+      value: idx,
+      label: t
+    }
+  })
 
   return (
-    <div className="col-md-2" id={`classSkillStat${itemStat.id}-${i}`}>
-      <select
-        id={`Stat${itemStat.id}Value${i}`}
-        className="form-control"
-        defaultValue={itemStat.values[i]}
-        onChange={e => {
-          itemStat.values[i] = Number(e.currentTarget.value)
-          update(itemStat, rowId)
+    <div className="col-4" id={`classSkillStat${itemStat.id}-${i}`}>
+      <DropDown
+        onChange={option => {
+          if (option !== null) {
+            itemStat.values[i] = Number(option.value)
+            update(itemStat, rowId)
+          }
         }}
-      >
-        { classSkillRows.length > 0 ? classSkillRows : [] }
-      </select>
+        value={classSkillRows[itemStat.id]}
+        options={classSkillRows}
+      />
     </div>
   )
 }
 
 const SkillValues = ({itemStat, rowId, update, i}: StatValueProps) => {
-  const skillRows = skills.map(s => (
-    <option value={s.i} key={s.i}>{s.v.s}</option>
-  ))
   return (
-    <div className="col-md-2" id={`skillStat${itemStat.id}-${i}`}>
-      <select
-        id={`Stat${itemStat.id}Value${i}`}
-        className="form-control"
-        defaultValue={itemStat.values[i]}
-        onChange={e => {
-          itemStat.values[i] = Number(e.currentTarget.value)
-          update(itemStat, rowId)
+    <div className="col-4" id={`skillStat${itemStat.id}-${i}`}>
+      <DropDown
+        onChange={option => {
+          if (option) {
+            itemStat.values[i] = Number(option.value)
+            update(itemStat, rowId)
+          }
         }}
-      >
-        { skillRows.length > 0 ? skillRows : [] }
-      </select>
+        value={skillRows[itemStat.id]}
+        options={skillRows}
+      />
     </div>
   )
 }
@@ -143,13 +159,11 @@ type StatsRowProps = {
   remove: (idx: number) => void
 }
 const StatsRow = ({rowId, itemStat, update, remove}: StatsRowProps) => {
-
   const change = (id: number, value: number, idx: number) => {
     const newData = itemStat,
       maxValue = max(id),
       minValue = min(id)
 
-    console.log(itemStat, idx)
     if (value > maxValue) {
       newData.values[idx] = maxValue
     } else if (value < minValue) {
@@ -157,13 +171,8 @@ const StatsRow = ({rowId, itemStat, update, remove}: StatsRowProps) => {
     } else {
       newData.values[idx] = value
     }
-    console.log(newData, idx)
     update(newData, rowId)
   }
-
-  const statRows = stats.map((stat, idx) => (
-    <option value={idx} key={idx}>{idx} - {stat.s}</option>
-  ))
 
   const StatValueRows: Array<JSX.Element> = []
   const StatValueNum = numValues(itemStat.id)
@@ -206,8 +215,8 @@ const StatsRow = ({rowId, itemStat, update, remove}: StatsRowProps) => {
     else if (!isClass(itemStat.id, idx) && !isClassSkill(itemStat.id, idx) && !isSkill(itemStat.id, idx)) {
       StatValueRows.push(
         <div
-          key={`UnknownValue${idx}-${rowId}`}
-          className="col-md-2"
+          key={`StatValue${idx}-${rowId}`}
+          className="col-3"
           id={`itemStat${itemStat.id}-${i}`}
         >
           <input
@@ -225,34 +234,31 @@ const StatsRow = ({rowId, itemStat, update, remove}: StatsRowProps) => {
   }
 
   return (
-    <div className="form-row" id={`Row${itemStat.id}`}>
-      <div className="col-md-4">
-        <div className="form-row">
-          <div className="col-md-2">
+    <div className="row" id={`Row${itemStat.id}`}>
+      <div className="col-4">
+        <div className="row">
+          <div className="col-2">
             <button
               type="button"
               className="btn btn-link red"
               onClick={() => remove(rowId)}
-            >&times;</button>
-          </div>
-          <div className="col-md-10">
-            <select
-              className="form-control"
-              id={`Stat${rowId}`}
-              defaultValue={itemStat.id}
-              onChange={e => {
-                const newItemStat = itemStat
-                newItemStat.id = Number(e.currentTarget.value)
-                update(newItemStat, rowId)
-              }}
             >
-              { statRows.length > 0 ? statRows : [] }
-            </select>
+              <FontAwesomeIcon icon={faTrashCan} />
+            </button>
+          </div>
+          <div className="col-10">
+            <DropDown
+              value={statRows[itemStat.id]}
+              options={statRows}
+            />
           </div>
         </div>
-        {/* <label htmlFor={`Stat${id}`}>Stat</label> */}
       </div>
-      { StatValueRows.length > 0 ? StatValueRows : [] }
+      <div className="col-8">
+        <div className="row">
+          { StatValueRows.length > 0 ? StatValueRows : [] }
+        </div>
+      </div>
     </div>
   )
 }
@@ -298,12 +304,12 @@ const ItemStatsEditor = ({itemStats, id, updateStats}: ItemStatsEditorProps) => 
 
   return (
     <div id={id}>
-      <div className="form-row">
-        <div className="col-md-4">Stat</div>
-        <div className="col-md-2">Value</div>
+      <div className="row">
+        <div className="col-4">Stat</div>
+        <div className="col-8">Value</div>
       </div>
       { ItemStatRows.length > 0 ? ItemStatRows : [] }
-      <div className="form-row">
+      <div className="row">
         <button
           type="button"
           className="btn btn-link"

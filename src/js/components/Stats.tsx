@@ -150,7 +150,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
 
   return (
     <div>
-      <div className="form-group mt-2">
+      <div className="form-group mt-3">
         <label htmlFor={'name'}>Name</label>
         <input
           type="text"
@@ -164,8 +164,8 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           required
         />
       </div>
-      <div className="form-row">
-        <div className="col-md-12">
+      <div className="row">
+        <div className="col">
           <div className="form-check form-check-inline">
             <input
               className="form-check-input"
@@ -212,8 +212,8 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           </div>
         </div>
       </div>
-      <div className="form-row">
-        <div className="col-md-2">
+      <div className="row">
+        <div className="col-md-3">
           <label htmlFor="Level">Level</label>
           <input
             type="number"
@@ -225,7 +225,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(12, Number(e.currentTarget.value), 'level')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="Experience">Experience</label>
           <input
             type="number"
@@ -236,7 +236,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           />
         </div>
       </div>
-      <div className="form-row">
+      <div className="row">
         <div className="col-md-3">
           <label htmlFor="Life">Life</label>
           <div className="input-group">
@@ -316,8 +316,8 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           </div>
         </div>
       </div>
-      <div className="form-row">
-        <div className="col-md-2">
+      <div className="row">
+        <div className="col-md-3">
           <label htmlFor="Strength">Strength</label>
           <input
             type="number"
@@ -329,7 +329,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(0, Number(e.currentTarget.value), 'strength')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="Dexterity">Dexterity</label>
           <input
             type="number"
@@ -341,7 +341,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(2, Number(e.currentTarget.value), 'dexterity')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="Vitality">Vitality</label>
           <input
             type="number"
@@ -353,7 +353,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(3, Number(e.currentTarget.value), 'vitality')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="Energy">Energy</label>
           <input
             type="number"
@@ -366,8 +366,8 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           />
         </div>
       </div>
-      <div className="form-row">
-        <div className="col-md-2">
+      <div className="row">
+        <div className="col-md-3">
           <label htmlFor="UnusedStatPoints">Unused Stat Points</label>
           <input
             type="number"
@@ -379,7 +379,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(4, Number(e.currentTarget.value), 'unused_stats')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="UnusedSkillPoints">Unused Skill Points</label>
           <input
             type="number"
@@ -392,8 +392,8 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
           />
         </div>
       </div>
-      <div className="form-row">
-        <div className="col-md-2">
+      <div className="row">
+        <div className="col-md-3">
           <label htmlFor="Gold">Gold</label>
           <input
             type="number"
@@ -405,7 +405,7 @@ const Stats = ({saveData, updateSaveData}: StatsProps) => {
             onChange={(e) => setValue(14, Number(e.currentTarget.value), 'gold')}
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <label htmlFor="StashedGold">Stashed Gold</label>
           <input
             type="number"

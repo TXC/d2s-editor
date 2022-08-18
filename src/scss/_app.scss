@@ -7,11 +7,11 @@
   font-style: normal;
   src: url('../assets/fonts/avqest.woff');
 }
-
+/*
 * {
   border-radius: 0 !important;
 }
-
+*/
 div ul.context-menu {
   top: 0;
   left: 0;
@@ -111,11 +111,60 @@ ul {
 }
 
 .custom-file {
+  overflow: hidden;
+
+  .form-control-file {
+    &:hover {
+      background-color: #dde0e3;
+      cursor: pointer;
+    }
+  }
+  input[type=file] {
+    margin-left: -2px !important;
+    &::-webkit-file-upload-button,
+    &::file-selector-button {
+      display: none;
+    }
+  }
+
+  &-input {
+    white-space: nowrap;
+    &.selected {
+      &::after {
+        content: "" !important;
+      }
+    }
+  }
   &-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1;
     height: calc(1.75em + 0.75rem);
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #adb5bd;
+    background-color: #fff;
+    //border: 1px solid #444;
+    //border-radius: 0.25rem;
+
     &::after {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 3;
+      display: block;
       color: var(--color-white);
       height: calc(1.75em + 0.75rem);
+      padding: 0.375rem 0.75rem;
+      line-height: 1.5;
+      content: "Browse";
+      background-color: #444;
+      border: 0;
     }
   }
 }
@@ -347,7 +396,9 @@ ul {
   &-container {
     color: black !important;
   }
-  &__control {}
+  &__control {
+    border-radius: 0.375rem !important;
+  }
   &__value-container {}
   &__indicators {}
   &__menu {

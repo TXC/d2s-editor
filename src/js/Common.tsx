@@ -1,10 +1,9 @@
 import * as React from 'react'
 import InvItem from './components/inventory/Item'
 import {types} from '@dschu012/d2s'
-import {Menu, Item} from 'react-contexify'
+import {Menu, Item, contextMenu} from 'react-contexify'
 import type {optionClickedProps} from './components/App'
 import type {D2CItem, D2CS} from './types'
-import type {itemRC} from './components/inventory/Item'
 
 export const head = (items: D2CItem[]): D2CItem | undefined => {
   return items.find(e => e.equipped_id === 1);
@@ -111,16 +110,27 @@ export const RCGridMenu = ({optionClicked}: RCMenuArguments) => {
   )
 }
 
-export type EquipDrop = ($event: React.DragEvent, position: number) => void
+export type EquipDrop = ($event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, position: number) => void
 export type EquipDragOver = ($event: React.DragEvent) => boolean
-export type EquipDragEnter = ($event: React.DragEvent, position: number) => void
-export type EquipDragLeave = ($event: React.DragEvent, position: number) => void
+export type EquipDragEnter = ($event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, position: number) => void
+export type EquipDragLeave = ($event: React.DragEvent, ref: React.RefObject<HTMLDivElement>) => void
 export type EquipOnSelect = (item: D2CItem) => void
+
+type SpanElProp = {
+  onDrop?: ($event: React.DragEvent) => void
+  onDragOver?: ($event: React.DragEvent) => void
+  onDragEnter?: ($event: React.DragEvent) => void
+  onDragLeave?: ($event: React.DragEvent) => void
+}
+type itemElProp = {
+  clickEvent?: () => void
+  contextMenuEvent?: ($event: React.MouseEvent) => void
+}
+
 export type EquippedItemArguments = {
   id: string;
   className: string;
   position: number;
-  itemRC: itemRC;
   selectEvent: EquipOnSelect;
   item?: D2CItem;
   drop?: EquipDrop;
@@ -128,7 +138,6 @@ export type EquippedItemArguments = {
   dragenter?: EquipDragEnter;
   dragleave?: EquipDragLeave;
 }
-
 export const EquippedItem = ({
   id,
   className,
@@ -138,50 +147,52 @@ export const EquippedItem = ({
   dragover,
   dragenter,
   dragleave,
-  itemRC,
   selectEvent
 }: EquippedItemArguments) => {
-  const ref = React.useRef(null)
+  const ref = React.useRef(null),
+        spanProps: SpanElProp = {},
+        itemDivProps: itemElProp = {}
+
+  if (drop) {
+    spanProps.onDrop = ($event) => drop($event, ref, position)
+  }
+  if (dragover) {
+    spanProps.onDragOver = ($event) => dragover($event)
+  }
+  if (dragenter) {
+    spanProps.onDragEnter = ($event) => dragenter($event, ref, position)
+  }
+  if (dragleave) {
+    spanProps.onDragLeave = ($event) => dragleave($event, ref)
+  }
+
+  if (selectEvent && item) {
+    itemDivProps.clickEvent = () => selectEvent(item)
+  }
+  if (item) {
+    itemDivProps.contextMenuEvent = ($event) => contextMenu.show({
+      id: RCItemMenuId,
+      event: $event,
+      props: {
+        item: item
+      }
+    });
+  }
+
   return (
     <span
-      ref={ref}
       className={className}
-      onDrop={($event) => {
-        if (drop) {
-          drop($event, position)
-        }
-      }}
-      onDragOver={($event) => {
-        if (dragover) {
-          dragover($event)
-        }
-      }}
-      onDragEnter={($event) => {
-        if (dragenter) {
-          dragenter($event, position)
-        }
-      }}
-      onDragLeave={($event) => {
-        if (dragleave) {
-          dragleave($event, position)
-        }
-      }}
+      {...spanProps}
     >
-      <div className={'layer'} id={`${id}-${position}`}></div>
+      <div
+        ref={ref}
+        className={'layer'}
+        id={`${id}-${position}`}
+      />
       {item && (
       <InvItem
-        id={`Item-${id}-${position}`}
         item={item}
-        clickEvent={() => {
-          if (selectEvent) {
-            selectEvent(item)
-          }
-        }}
-        contextMenuEvent={($event: React.MouseEvent) => {
-          if (itemRC) {
-            itemRC($event, item)
-          }
-        }}
+        {...itemDivProps}
       />
       )}
     </span>

@@ -1,6 +1,8 @@
 //import * as React from 'react'
 import {D2CS} from '../types'
 import { updateSaveData } from './App';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import { faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 
 const flags: Array<string> = ['is_completed', 'is_requirement_completed', 'is_received',
   'unk3', 'unk4', 'unk5', 'unk6', 'consumed_scroll', 'unk8', 'unk9', 'unk10',
@@ -129,17 +131,18 @@ const Quest = ({saveData, difficulty, act, quest, updateQuest, reset}: QuestProp
     const defaultValue = saveData.header[difficulty.key][act.key][quest.key][state.key]
     return (
       <li key={`State${difficulty.key}${act.key}${quest.key}${state.key}`}>
-        <div className="custom-control custom-switch">
+        <div className="form-check form-switch">
           <input
-            className="custom-control-input"
+            className="form-check-input"
             type="checkbox"
+            role="switch"
             id={`Quest${difficulty.key}${act.key}${quest.key}${state.key}`}
             defaultChecked={defaultValue}
             value={1}
             onChange={() => updateQuest(difficulty, act, quest, state, null)}
           />
           <label
-            className="custom-control-label"
+            className="form-check-label"
             htmlFor={`Quest${difficulty.key}${act.key}${quest.key}${state.key}`}
           >{state.label}</label>
         </div>
@@ -156,7 +159,7 @@ const Quest = ({saveData, difficulty, act, quest, updateQuest, reset}: QuestProp
         title="Reset Quest"
         onClick={() => reset(difficulty, act, quest)}
       >
-        <i className="fa fa-undo"></i>
+        <FontAwesomeIcon icon={faRotateLeft} />
       </button>
       <ul>
         {questValues.length > 0 ? questValues : []}
@@ -191,17 +194,18 @@ const Act = ({saveData, difficulty, act, updateQuest, updateAct, resetAct, reset
 
   return (
     <li>
-      <div className="custom-control custom-switch">
+      <div className="form-check form-switch">
         <input
-          className="custom-control-input"
+          className="form-check-input"
           type="checkbox"
+          role="switch"
           id={`Act${difficulty.key}${act.key}`}
           defaultChecked={act.all}
           value={1}
           onChange={() => updateAct(difficulty, act)}
         />
         <label
-          className="custom-control-label"
+          className="form-check-label"
           htmlFor={`Act${difficulty.key}${act.key}`}
         >
           {act.label}
@@ -212,7 +216,7 @@ const Act = ({saveData, difficulty, act, updateQuest, updateAct, resetAct, reset
           title="Reset Act"
           onClick={() => resetAct(difficulty, act)}
         >
-          <i className="fa fa-undo"></i>
+          <FontAwesomeIcon icon={faRotateLeft} />
         </button>
       </div>
       <ul>
@@ -261,17 +265,18 @@ const Difficulty = ({
     <div className="col-md-4 p-3">
       <ul>
         <li>
-          <div className="custom-control custom-switch">
+          <div className="form-check form-switch">
             <input
-              className="custom-control-input"
+              className="form-check-input"
               type="checkbox"
+              role="switch"
               id={`Difficulty${difficulty.key}`}
               defaultChecked={difficulty.all}
               value={1}
               onChange={() => updateDiff(difficulty)}
             />
             <label
-              className="custom-control-label"
+              className="form-check-label"
               htmlFor={`Difficulty${difficulty.key}`}
             >
               {difficulty.label}
@@ -282,7 +287,7 @@ const Difficulty = ({
               title="Reset Difficulty"
               onClick={() => resetDifficulty(difficulty)}
             >
-              <i className="fa fa-undo"></i>
+              <FontAwesomeIcon icon={faRotateLeft} />
             </button>
           </div>
           <ul>
@@ -406,7 +411,7 @@ const Quests = ({saveData, updateSaveData}: QuestsProps) => {
   })
 
   return (
-    <div className="form-row">
+    <div className="row">
       {difficultyRow.length > 0 ? difficultyRow : []}
     </div>
   )

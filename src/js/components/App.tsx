@@ -1,5 +1,7 @@
 import * as React from 'react'
 import * as d2s from '@dschu012/d2s'
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faGithub} from '@fortawesome/free-brands-svg-icons'
 import Stats from './Stats'
 import Waypoints from './Waypoints'
 import Quests from './Quests'
@@ -9,15 +11,14 @@ import MessageViewer from './MessageViewer'
 import NPC from './NPC'
 import utils from '../utils'
 import useGrid from '../hooks/Grid'
-import {Dropdown, Tab, Nav, Button, ButtonGroup, Container, Col, Row, Modal} from 'react-bootstrap'
+import {Dropdown, Tab, Nav, Button, ButtonGroup, Container, Col, Row, Modal, Navbar} from 'react-bootstrap'
 
 import type {heightWidthType, gridType} from '../hooks/Grid'
-import type {ItemPack, D2CItem, D2CS} from '../types'
+import type {ItemPack, D2CItem, D2CS, KeyValue} from '../types'
 import type {notificationType, removeNotification} from './MessageViewer'
 import {equipped, RCGridMenu, RCItemMenu, waist} from '../Common'
 import Mercenary from './Mercenary'
 import ItemEditor from './inventory/ItemEditor';
-import {KeyValue} from '../types/d2'
 //import DC6 from "../DC6";
 
 export type updateSaveData = (newData: D2CS|null) => void
@@ -25,7 +26,7 @@ export type D2CEvent = {
   uuid?: string;
   item: D2CItem;
   grid?: Array<number>;
-  id?: string;
+  ref?: React.RefObject<HTMLDivElement>;
   location?: locationType,
   type: string;
 }
@@ -45,37 +46,27 @@ export type optionClickedProps = {
 }
 
 // region JSX functions
-type NavBarProps = {
+type NavigationBarProps = {
   toggleTheme: () => void;
 }
-const NavBar = ({toggleTheme}: NavBarProps) => {
+const NavigationBar = ({toggleTheme}: NavigationBarProps) => {
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="octicon octicon-clippy navbar-brand">
-        <i className="fa fa-fw fa-github"></i>
-        <a href="https://github.com/TXC">TXC</a> /
-        <a className="font-weight-bold" href="https://github.com/TXC/d2s-editor">d2s-editor</a>
-      </div>
-      <button className="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
-              aria-label="Toggle navigation">
-        <span className="navbar-toggler-icon"></span>
-      </button>
-      <div className="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul className="navbar-nav">
-          <li className="nav-item active">
-            <a className="nav-link" href="#">Home <span className="sr-only">(current)</span></a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" href="#" onClick={() => toggleTheme()}>Change Theme</a>
-          </li>
-        </ul>
-      </div>
-    </nav>
+    <Navbar bg="light" expand="xl">
+      <Container fluid>
+        <Navbar.Brand>
+          <FontAwesomeIcon icon={faGithub} />
+          <a href="https://github.com/TXC">TXC</a> /
+          <a className="font-weight-bold" href="https://github.com/TXC/d2s-editor">d2s-editor</a>
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="navbar-nav" />
+        <Navbar.Collapse id="navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link href="#">Home</Nav.Link>
+            <Nav.Link href="#" onClick={toggleTheme}>Change Theme</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   )
 }
 
@@ -123,13 +114,15 @@ const Character = ({updateSaveData}: CharacterProps) => {
   }
 
   return (
-    <div className="form-group">
+    <div className="form-group mb-4">
       <div className="input-group">
-        <div className="custom-file">
+        <div className="form-control custom-file">
           <input
             type="file"
             name="d2sFile"
+            className="custom-file-input"
             accept=".d2s"
+            placeholder="*.d2s"
             onChange={onFileChange}
             id={id}
           />
@@ -140,22 +133,19 @@ const Character = ({updateSaveData}: CharacterProps) => {
             *.d2s
           </label>
         </div>
-        <div>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary">Create New</Dropdown.Toggle>
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary">Create New</Dropdown.Toggle>
 
-            <Dropdown.Menu align="right" >
-              <Dropdown.Item onClick={() => newChar(0)}>Amazon</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(1)}>Sorceress</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(2)}>Necromancer</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(3)}>Paladin</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(4)}>Barbarian</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(5)}>Druid</Dropdown.Item>
-              <Dropdown.Item onClick={() => newChar(6)}>Assassin</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </div>
-        <div className="input-group-append"><span> </span></div>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => newChar(0)}>Amazon</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(1)}>Sorceress</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(2)}>Necromancer</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(3)}>Paladin</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(4)}>Barbarian</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(5)}>Druid</Dropdown.Item>
+            <Dropdown.Item onClick={() => newChar(6)}>Assassin</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
     </div>
   )
@@ -430,32 +420,28 @@ const SelectedItemModal = ({isThemed, selected, setSelected, location, setLocati
         )}
       </Modal.Body>
       <Modal.Footer>
-        <div className="d-flex justify-content-start">
-          { selected !== null && (
-            <>
+        { selected !== null && (
+          <div className="btn-group">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => callOnEvent({type: 'share', item: selected })}
+            >Share</button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => callOnEvent({type: 'copy', item: selected })}
+            >Copy</button>
+            { selected.location_id !== 6 && (
               <button
                 type="button"
-                className="btn btn-primary"
-                onClick={() => callOnEvent({type: 'share', item: selected })}
-              >Share</button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => callOnEvent({type: 'copy', item: selected })}
-              >Copy</button>
-              { selected.location_id !== 6 && (
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={() => callOnEvent({type: 'delete', item: selected })}
-                >Delete</button>
-              )}
-            </>
-          )}
-        </div>
-        <div className="d-flex justify-content-end">
-          <Button variant="secondary" onClick={handleClose}>Close</Button>
-        </div>
+                className="btn btn-danger"
+                onClick={() => callOnEvent({type: 'delete', item: selected })}
+              >Delete</button>
+            )}
+          </div>
+        )}
+        <Button variant="secondary" onClick={handleClose}>Close</Button>
       </Modal.Footer>
     </Modal>
   )
@@ -847,15 +833,11 @@ const App = () => {
       }
     }
     else if (e.type == 'move') {
-      if (!e.id) {
+      if (!e.ref || !e.ref.current) {
         return
       }
 
-      const element = document.getElementById(e.id);
-      if (element === null) {
-        return
-      }
-      Object.assign(element.style, {
+      Object.assign(e.ref.current.style, {
         backgroundColor: '',
         width: '',
         height: ''
@@ -877,7 +859,11 @@ const App = () => {
       }
     }
     else if (e.type == 'dragenter') {
-      if (!e.location || !e.id) {
+      if (!e.location) {
+        console.error('Missing location')
+        return
+      }
+      if (!e.ref || !e.ref.current) {
         return
       }
       if (!e.location.x) {
@@ -893,11 +879,7 @@ const App = () => {
 
       const item = e.item;
       if (canPlaceItem(item, e.location.storage_page, e.location.x, e.location.y)) {
-        const element = document.getElementById(e.id);
-        if (element === null) {
-          return
-        }
-        Object.assign(element.style, {
+        Object.assign(e.ref.current.style, {
           backgroundColor: 'green',
           width: `calc(var(--grid-size) * ${item.inv_width})`,
           height: `calc(var(--grid-size) * ${item.inv_height})`
@@ -905,14 +887,10 @@ const App = () => {
       }
     }
     else if (e.type == 'dragleave') {
-      if (!e.id) {
+      if (!e.ref || !e.ref.current) {
         return
       }
-      const element = document.getElementById(e.id);
-      if (element === null) {
-        return
-      }
-      Object.assign(element.style, {
+      Object.assign(e.ref.current.style, {
         backgroundColor: '',
         width: '',
         height: ''
@@ -1155,7 +1133,7 @@ const App = () => {
       //<Prutt/>
   return (
     <div className={isThemed ? 'theme-d2' : ''}>
-      <NavBar toggleTheme={toggleTheme}/>
+      <NavigationBar toggleTheme={toggleTheme}/>
       <RCItemMenu optionClicked={optionClicked} />
       <RCGridMenu optionClicked={optionClicked} />
       <SelectedItemModal

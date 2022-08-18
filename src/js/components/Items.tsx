@@ -1,4 +1,4 @@
-import {Tab, Row, Col, Nav, Modal, Button} from 'react-bootstrap'
+import {Tab, Row, Col, Nav, Modal, Button, Dropdown} from 'react-bootstrap'
 import Grid from './inventory/Grid'
 import Equipped from './inventory/Equipped'
 import {equipped, belt, inventory, stash, cube} from '../Common'
@@ -25,8 +25,8 @@ const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
     }
   }
   return (
-    <div className="form-row">
-      <div className="col-md-12">
+    <div className="row">
+      <div className="col">
         <label>{label}</label>
         <div className="input-group">
           <input
@@ -41,9 +41,7 @@ const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
               gridChange(newGrid)
             }}
           />
-          <div className="input-group-prepend input-group-append">
-            <div className="input-group-text">,</div>
-          </div>
+          <div className="input-group-text">,</div>
           <input
             type="number"
             min="1"
@@ -68,9 +66,10 @@ type GridSettingsProps = {
 }
 const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
   return (
-    <>
-      <button type="button" className="btn btn-secondary dropdown-toggle" data-toggle="dropdown"/>
-      <div className="dropdown-menu dropdown-menu-right">
+    <Dropdown>
+      <Dropdown.Toggle variant="secondary" />
+
+      <Dropdown.Menu>
         <div className="p-3 form-group">
           <GridRow
             gridChange={gridChange}
@@ -97,8 +96,8 @@ const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
             grid={grid}
           />
         </div>
-      </div>
-    </>
+      </Dropdown.Menu>
+    </Dropdown>
   )
 }
 
@@ -111,7 +110,7 @@ type RightMenuProps = {
 }
 const RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}: RightMenuProps) => {
   return (
-    <div className="float-right">
+    <div className="btn-group" role="group">
       <GridSettings
         gridChange={gridChange}
         grid={grid}
@@ -221,7 +220,6 @@ const AddItemModal = ({showModal, setShowModal, itemPack, isThemed, paste}: AddI
         <div className="row d-flex justify-content-center mt-3 pl-5 pr-5">
           {preview && (
             <Item
-              id={'preview'}
               item={preview}
               clazz={'item-edit'}
             />
@@ -355,7 +353,6 @@ const Items = ({
       <Tab.Content>
         <Tab.Pane eventKey={'equipped'}>
           <Equipped
-            id={'Equipped'}
             expansion={saveData.header.status.expansion}
             items={equipped(saveData)}
             selectEvent={selectEvent}

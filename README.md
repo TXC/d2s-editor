@@ -1,6 +1,8 @@
 # d2s-editor
 
-[Example](http://d2s.dschu012.dev/)
+This is a fork of [dschu012/d2s-editor](https://github.com/dschu012/d2s-editor/) written in React and TypeScript
+
+[Example](http://d2s.txc.se/)
 
 This is a basic Diablo 2 save editor for D2 and D2R. The parser uses the TXT data from the Diablo 2 MPQs so the editor could be repurposed for basic TXT mods. Some of the main features are:
 

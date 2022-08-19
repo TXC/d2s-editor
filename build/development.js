@@ -14,6 +14,6 @@ module.exports = merge(common, {
       directory: path.join(__dirname, '../public'),
     },
     compress: true,
-    port: 9000,
+    port: 5173,
   },
 });

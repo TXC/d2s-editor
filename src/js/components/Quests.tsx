@@ -1,4 +1,4 @@
-//import * as React from 'react'
+import {Form} from 'react-bootstrap'
 import {D2CS} from '../types'
 import { updateSaveData } from './App';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -131,21 +131,13 @@ const Quest = ({saveData, difficulty, act, quest, updateQuest, reset}: QuestProp
     const defaultValue = saveData.header[difficulty.key][act.key][quest.key][state.key]
     return (
       <li key={`State${difficulty.key}${act.key}${quest.key}${state.key}`}>
-        <div className="form-check form-switch">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            role="switch"
-            id={`Quest${difficulty.key}${act.key}${quest.key}${state.key}`}
-            defaultChecked={defaultValue}
-            value={1}
-            onChange={() => updateQuest(difficulty, act, quest, state, null)}
-          />
-          <label
-            className="form-check-label"
-            htmlFor={`Quest${difficulty.key}${act.key}${quest.key}${state.key}`}
-          >{state.label}</label>
-        </div>
+        <Form.Switch
+          id={`Quest${difficulty.key}${act.key}${quest.key}${state.key}`}
+          defaultChecked={defaultValue}
+          value={1}
+          onChange={() => updateQuest(difficulty, act, quest, state, null)}
+          label={state.label}
+        />
       </li>
     )
   })
@@ -194,22 +186,14 @@ const Act = ({saveData, difficulty, act, updateQuest, updateAct, resetAct, reset
 
   return (
     <li>
-      <div className="form-check form-switch">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
+      <div>
+        <Form.Switch
           id={`Act${difficulty.key}${act.key}`}
           defaultChecked={act.all}
           value={1}
           onChange={() => updateAct(difficulty, act)}
+          label={act.label}
         />
-        <label
-          className="form-check-label"
-          htmlFor={`Act${difficulty.key}${act.key}`}
-        >
-          {act.label}
-        </label>
         <button
           type="button"
           className="btn btn-link btn-sm"
@@ -265,22 +249,14 @@ const Difficulty = ({
     <div className="col-md-4 p-3">
       <ul>
         <li>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
+          <div>
+            <Form.Switch
               id={`Difficulty${difficulty.key}`}
               defaultChecked={difficulty.all}
               value={1}
               onChange={() => updateDiff(difficulty)}
+              label={difficulty.label}
             />
-            <label
-              className="form-check-label"
-              htmlFor={`Difficulty${difficulty.key}`}
-            >
-              {difficulty.label}
-            </label>
             <button
               type="button"
               className="btn btn-link btn-sm"

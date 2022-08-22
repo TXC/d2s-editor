@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {D2CItem} from '../../types'
 import Item from './Item'
-import type {onEvent} from '../App'
+import type {Hook, onEvent} from '../App'
 import type {itemRC} from './Item'
 import {contextMenu} from 'react-contexify'
 import {RCGridMenuId, RCItemMenuId} from '../../Common'
@@ -49,15 +49,16 @@ const GridCols = ({id, rowId, width, dragover, dragenter, dragleave, gridRC, dro
 }
 
 type GridProps = {
-  id: string;
-  width: number;
-  height: number;
-  page: number;
-  items: D2CItem[];
-  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
-  onEvent: onEvent;
+  id: string
+  hook: Hook
+  width: number
+  height: number
+  page: number
+  items: D2CItem[]
+  onEvent: onEvent
 }
-const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps) => {
+const Grid = ({id, width, height, hook, page, items, onEvent}: GridProps) => {
+
   const dragover: gridDragOver = (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -158,7 +159,7 @@ const Grid = ({id, width, height, page, items, selectEvent, onEvent}: GridProps)
         key={`item-${idx}`}
         item={d2item}
         clickEvent={() => {
-          selectEvent(d2item)
+          hook.selected.setSelected(d2item)
         }}
         contextMenuEvent={($event: React.MouseEvent) => itemRC($event, d2item)}
       />

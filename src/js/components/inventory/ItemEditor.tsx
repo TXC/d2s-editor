@@ -10,8 +10,9 @@ import {
   UniqueItem,
 } from '../../types'
 import * as React from 'react'
-import {locationType, onEvent} from '../App'
+import {onEvent} from '../App'
 import DropDown, {singleProperty} from '../DropDown'
+import {locationType} from '../../hooks/SelectedItem'
 
 type ItemRowType = {
   n?: string;

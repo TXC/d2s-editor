@@ -1,8 +1,8 @@
 import {EquippedItem, head, torso, right_hand, left_hand, mercenary} from '../Common'
 import utils from '../utils'
 import React from 'react'
-import {D2CS, D2CItem} from '../types'
-import {updateSaveData} from './App'
+import {D2CS} from '../types'
+import {Hook, updateSaveData} from './App'
 
 const nameRogueScouts = [
   'Aliza',
@@ -196,45 +196,41 @@ const mercenaryTypes = [
 ]
 
 type ItemsProps = {
-  id: string;
-  saveData: D2CS;
-  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  id: string
+  hook: Hook
+  saveData: D2CS
 }
-const Items = ({id, saveData, selectEvent}: ItemsProps) => {
+const Items = ({id, hook, saveData}: ItemsProps) => {
   const items = mercenary(saveData)
 
   return (
     <div className="inventory">
       <EquippedItem
-        id={id} className={'head'} item={head(items)} position={1}
-        selectEvent={selectEvent}
+        id={id} hook={hook} className={'head'} item={head(items)} position={1}
       />
 
       <EquippedItem
-        id={id} className={'torso'} item={torso(items)} position={3}
-        selectEvent={selectEvent}
+        id={id} hook={hook} className={'torso'} item={torso(items)} position={3}
       />
 
       <EquippedItem
-        id={id} className={'right-hand weapon'} item={right_hand(items)} position={4}
-        selectEvent={selectEvent}
+        id={id} hook={hook} className={'right-hand weapon'} item={right_hand(items)} position={4}
       />
 
       <EquippedItem
-        id={id} className={'left-hand weapon'} item={left_hand(items)} position={5}
-        selectEvent={selectEvent}
+        id={id} hook={hook} className={'left-hand weapon'} item={left_hand(items)} position={5}
       />
     </div>
   )
 }
 
 type MercenaryProps = {
-  id: string;
-  saveData: D2CS;
-  updateSaveData: updateSaveData;
-  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
+  id: string
+  hook: Hook
+  saveData: D2CS
+  updateSaveData: updateSaveData
 }
-const Mercenary = ({id, saveData, updateSaveData, selectEvent}: MercenaryProps) => {
+const Mercenary = ({id, hook, saveData, updateSaveData}: MercenaryProps) => {
   const mercTypeId = saveData.header.merc_type,
         mercNameId = saveData.header.merc_name_id,
         mercExp = saveData.header.merc_experience ?? 0,
@@ -364,8 +360,8 @@ const Mercenary = ({id, saveData, updateSaveData, selectEvent}: MercenaryProps) 
       <div>
         <Items
           id={id}
+          hook={hook}
           saveData={saveData}
-          selectEvent={selectEvent}
         />
       </div>
     </div>

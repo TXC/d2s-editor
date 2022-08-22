@@ -30,14 +30,6 @@
     @include borderImageNavbar()
   }
 
-  .form-control:focus {
-    color: #fbd103;
-    background-color: #fff;
-    border-color: #739ac2;
-    outline: 0;
-    @include boxShadow(0 0 0 0.2rem color.scale(map.get($appColors, "dblue"), $alpha: 25%))
-  }
-
   .option {
     font-weight: normal;
     display: block;
@@ -77,23 +69,56 @@
     @include borderImageThin();
   }
 
-  .btn-danger {
-    color: #fff;
-    background-color: #E74C3C;
-    border-color: #E74C3C;
-    border-style: solid;
-    border-width: 3px;
-    @include borderImageThin();
+  .btn {
+    //line-height: 2.3;
+
+    &-danger {
+      color: #fff;
+      background-color: #E74C3C;
+      border-color: #E74C3C;
+      border-style: solid;
+      border-width: 3px;
+      @include borderImageThin();
+    }
+
+    &-secondary {
+      color: #fff;
+      background-color: #444;
+      border-color: #444;
+      border-style: solid;
+      border-width: 3px;
+      @include backgroundImageLight();
+      @include borderImageThin();
+
+      &:hover {
+        color: #ac943b;
+        background-color: #444;
+        border-color: #444;
+        border-style: solid;
+        border-width: 3px;
+        @include backgroundImageLight();
+        @include borderImageThin();
+      }
+
+      .active {
+        background-color: #444;
+        border-color: #444;
+        border-style: solid;
+        border-width: 3px;
+        @include backgroundImageLight();
+        @include borderImageThin();
+      }
+
+      &:not(:disabled):not(.disabled):active,
+      &:not(:disabled):not(.disabled).active {
+        color: #dea400;
+        background-color: #2b2a2a;
+        border-color: #242424;
+      }
+    }
   }
 
-  .btn-secondary:not(:disabled):not(.disabled):active,
-  .btn-secondary:not(:disabled):not(.disabled).active,
-  .show > .btn-secondary.dropdown-toggle {
-    color: #dea400;
-    background-color: #2b2a2a;
-    border-color: #242424;
-  }
-/*
+  /*
   @media (min-width: 768px) {
     .col-md-4 {
       -webkit-box-flex: 0;
@@ -108,6 +133,9 @@
   }
 */
   .dropdown {
+    &-toggle {
+      height: 3rem;
+    }
     &-menu {
       position: absolute;
       top: 100%;
@@ -191,8 +219,9 @@
 
   .form-control {
     display: block;
-    width: 100%;
-    height: calc(1.5em + 0.75rem + 2px);
+    //width: 100%;
+    //height: calc(1.5em + 0.75rem + 2px);
+    height: calc(1.5em + 1.5rem + 2px);
     padding: 0.375rem 0.75rem;
     font-size: 0.9375rem;
     font-weight: 400;
@@ -210,6 +239,14 @@
     border-width: 3px;
     @include backgroundImageDark();
     @include borderImageThin();
+
+    &:focus {
+      color: #fbd103;
+      background-color: #fff;
+      border-color: #739ac2;
+      outline: 0;
+      @include boxShadow(0 0 0 0.2rem color.scale(map.get($appColors, "dblue"), $alpha: 25%))
+    }
   }
 
   .grid {
@@ -224,6 +261,7 @@
 
   /** SELECT2 */
   .react-select {
+    $text-color: #c3bc68;
     $dark-color: #a08d00;
     $light-color: #b5a702;
     $lighter-color: #c5bf00;
@@ -235,6 +273,7 @@
     }
     &__control {
       background-color: color.scale(map.get($appColors, "lblack"), $alpha: -89%);
+      height: calc(1.5em + 1.5rem + 2px);
       border-radius: 0;
       border-style: solid;
       border-width: 3px;
@@ -244,11 +283,13 @@
       color: $light-color;
     }
     &__value-container {
-      color: $light-color;
       //line-height: 24px;
       //height: 28px;
       background-color: black;
       @include backgroundImageDark();
+    }
+    &__single-value {
+      color: $text-color;
     }
     &__indicator {
       color: $light-color;
@@ -294,35 +335,6 @@
     border-width: 3px;
     @include backgroundImageLight();
     @include borderImageThin();
-  }
-
-  .btn-secondary {
-    color: #fff;
-    background-color: #444;
-    border-color: #444;
-    border-style: solid;
-    border-width: 3px;
-    @include backgroundImageLight();
-    @include borderImageThin();
-
-    &:hover {
-      color: #ac943b;
-      background-color: #444;
-      border-color: #444;
-      border-style: solid;
-      border-width: 3px;
-      @include backgroundImageLight();
-      @include borderImageThin();
-    }
-
-    .active {
-      background-color: #444;
-      border-color: #444;
-      border-style: solid;
-      border-width: 3px;
-      @include backgroundImageLight();
-      @include borderImageThin();
-    }
   }
 
   .input-group-text {
@@ -419,7 +431,7 @@
         color: #e8900c;
         content: "";
         display: block;
-        margin-top: 3px;
+        margin-top: 5px;
         height: 28px;
         width: 106px;
         z-index: 3;

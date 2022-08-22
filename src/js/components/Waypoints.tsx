@@ -1,4 +1,5 @@
-//import * as React from 'react'
+import * as React from 'react'
+import {Form} from 'react-bootstrap'
 import {D2CS} from '../types'
 import { updateSaveData } from './App';
 
@@ -98,27 +99,21 @@ type WaypointProps = {
 };
 const Waypoint = ({saveData, difficulty, act, waypoint, updateWP}: WaypointProps) => {
   // @ts-ignore
-  const defaultValue = saveData.header.waypoints[difficulty.key][act.key][waypoint.key]
+  const [state, setState] = React.useState<boolean>(Boolean(saveData.header.waypoints[difficulty.key][act.key][waypoint.key]))
+
+  React.useEffect(() => {
+    updateWP(difficulty, act, waypoint)
+  }, [state])
 
   return (
     <li>
-      <div className="form-check form-switch">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id={`Waypoint${difficulty.key}${act.key}${waypoint.key}`}
-          defaultChecked={defaultValue}
-          value={1}
-          onChange={() => updateWP(difficulty, act, waypoint)}
-        />
-        <label
-          className="form-check-label"
-          htmlFor={`Waypoint${difficulty.key}${act.key}${waypoint.key}`}
-        >
-          {waypoint.label}
-        </label>
-      </div>
+      <Form.Switch
+        id={`Waypoint${difficulty.key}${act.key}${waypoint.key}`}
+        defaultChecked={state}
+        value={1}
+        onChange={() => setState(!state)}
+        label={waypoint.label}
+      />
     </li>
   )
 }
@@ -144,25 +139,22 @@ const Act = ({saveData, difficulty, act, updateWP, updateAct}: ActProps) => {
     )
   })
 
+  const [all, setAll] = React.useState<boolean>(act.all);
+
+  React.useEffect(() => {
+    act.all = all
+    updateAct(difficulty, act)
+  }, [all])
+
   return (
     <li>
-      <div className="form-check form-switch">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          role="switch"
-          id={`Act${difficulty.key}${act.key}`}
-          defaultChecked={act.all}
-          value={1}
-          onChange={() => updateAct(difficulty, act)}
-        />
-        <label
-          className="form-check-label"
-          htmlFor={`Act${difficulty.key}${act.key}`}
-        >
-          {act.label}
-        </label>
-      </div>
+      <Form.Switch
+        id={`Act${difficulty.key}${act.key}`}
+        defaultChecked={all}
+        value={1}
+        onChange={() => setAll(!all)}
+        label={act.label}
+      />
       <ul>
         {waypointRows.length > 0 ? waypointRows : []}
       </ul>
@@ -196,28 +188,24 @@ const Difficulty = ({
       />
     )
   })
+  const [all, setAll] = React.useState<boolean>(difficulty.all);
+
+  React.useEffect(() => {
+    difficulty.all = all
+    updateDiff(difficulty)
+  }, [all])
 
   return (
     <div className="col-md-4 p-2">
       <ul>
         <li>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id={`Difficulty${difficulty.key}`}
-              defaultChecked={difficulty.all}
-              value={1}
-              onChange={() => updateDiff(difficulty)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`Difficulty${difficulty.key}`}
-            >
-              {difficulty.label}
-            </label>
-          </div>
+          <Form.Switch
+            id={`Act${difficulty.key}`}
+            defaultChecked={all}
+            value={1}
+            onChange={() => setAll(!all)}
+            label={difficulty.label}
+          />
           <ul>
             {actRows.length > 0 ? actRows : []}
           </ul>

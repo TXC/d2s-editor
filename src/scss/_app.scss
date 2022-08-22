@@ -48,6 +48,10 @@ ul {
   list-style-type: none;
 }
 
+.nav-link {
+  padding: 0.5rem 1.2rem;
+}
+
 .react-contexify {
   background-color: map.get($appColors, "lblack");
 

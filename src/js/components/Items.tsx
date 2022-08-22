@@ -1,25 +1,20 @@
-import {Tab, Row, Col, Nav, Modal, Button, Dropdown} from 'react-bootstrap'
+import {Tab, Row, Col, Nav, Dropdown} from 'react-bootstrap'
 import Grid from './inventory/Grid'
 import Equipped from './inventory/Equipped'
 import {equipped, belt, inventory, stash, cube} from '../Common'
 import * as React from 'react'
-import {D2CItem, D2CS, ItemPack, KeyValue} from '../types'
-import utils from '../utils'
-import * as d2s from '@dschu012/d2s'
-import Item from './inventory/Item'
-import Select from 'react-select'
-import {onEvent, paste} from './App'
-import type {gridType} from '../hooks/Grid'
+import {D2CS} from '../types'
+import {Hook, onEvent, paste} from './App'
+import AddItemModal from './modal/AddItem'
 
 type GridRowProps = {
-  gridChange: (grid: gridType) => void;
-  label: string;
-  rowProp: string;
-  grid: gridType;
+  hook: Hook
+  label: string
+  rowProp: string
 }
-const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
-  if (!grid[rowProp]) {
-    grid[rowProp] = {
+const GridRow = ({hook, label, rowProp}: GridRowProps) => {
+  if (!hook.grid.grid[rowProp]) {
+    hook.grid.grid[rowProp] = {
       w: 0,
       h: 0
     }
@@ -34,11 +29,11 @@ const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
             min="1"
             max="20"
             className="form-control"
-            defaultValue={grid[rowProp].w}
+            defaultValue={hook.grid.grid[rowProp].w}
             onChange={(e) => {
-              const newGrid = grid
+              const newGrid = hook.grid.grid
               newGrid[rowProp].w = Number(e.currentTarget.value)
-              gridChange(newGrid)
+              hook.grid.updateGrid(newGrid)
             }}
           />
           <div className="input-group-text">,</div>
@@ -47,11 +42,11 @@ const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
             min="1"
             max="20"
             className="form-control"
-            defaultValue={grid[rowProp].h}
+            defaultValue={hook.grid.grid[rowProp].h}
             onChange={(e) => {
-              const newGrid = grid
+              const newGrid = hook.grid.grid
               newGrid[rowProp].h = Number(e.currentTarget.value)
-              gridChange(newGrid)
+              hook.grid.updateGrid(newGrid)
             }}
           />
         </div>
@@ -61,10 +56,9 @@ const GridRow = ({gridChange, label, rowProp, grid}: GridRowProps) => {
 }
 
 type GridSettingsProps = {
-  gridChange: (grid: gridType) => void;
-  grid: gridType;
+  hook: Hook
 }
-const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
+const GridSettings = ({hook}: GridSettingsProps) => {
   return (
     <Dropdown>
       <Dropdown.Toggle variant="secondary" />
@@ -72,28 +66,24 @@ const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
       <Dropdown.Menu>
         <div className="p-3 form-group">
           <GridRow
-            gridChange={gridChange}
+            hook={hook}
             label={'Inventory'}
             rowProp={'inv'}
-            grid={grid}
           />
           <GridRow
-            gridChange={gridChange}
+            hook={hook}
             label={'Belt'}
             rowProp={'belt'}
-            grid={grid}
           />
           <GridRow
-            gridChange={gridChange}
+            hook={hook}
             label={'Stash'}
             rowProp={'stash'}
-            grid={grid}
           />
           <GridRow
-            gridChange={gridChange}
+            hook={hook}
             label={'Cube'}
             rowProp={'cube'}
-            grid={grid}
           />
         </div>
       </Dropdown.Menu>
@@ -102,24 +92,19 @@ const GridSettings = ({gridChange, grid}: GridSettingsProps) => {
 }
 
 type RightMenuProps = {
-  gridChange: (grid: gridType) => void;
-  grid: gridType;
-  clipboard: D2CItem | null;
+  hook: Hook
   paste: paste;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}: RightMenuProps) => {
+const RightMenu = ({hook, paste, setShowModal}: RightMenuProps) => {
   return (
     <div className="btn-group" role="group">
-      <GridSettings
-        gridChange={gridChange}
-        grid={grid}
-      />
+      <GridSettings hook={hook}/>
       <button
         type="button"
         className="btn btn-primary"
-        disabled={!clipboard}
-        onClick={() => { if (clipboard) { paste(clipboard) } } }
+        disabled={!hook.clipboard.clipboard}
+        onClick={() => { if (hook.clipboard.clipboard) { paste(hook.clipboard.clipboard) } } }
       >
         Paste
       </button>
@@ -134,144 +119,20 @@ const RightMenu = ({gridChange, grid, clipboard, paste, setShowModal}: RightMenu
   )
 }
 
-type AddItemModalProps = {
-  showModal: boolean;
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-  isThemed: boolean;
-  itemPack: ItemPack;
-  paste: paste;
-}
-const AddItemModal = ({showModal, setShowModal, itemPack, isThemed, paste}: AddItemModalProps) => {
-  const [preview, setPreview] = React.useState<D2CItem | null>(null);
-
-  const itemRows = itemPack.map(item => {
-    //const keyName = item.key.replace(/\W/gm, '_')
-    return {
-      value: item,
-      label: item.key
-    }
-  })
-
-  const previewItem = async (itemData: KeyValue) => {
-    const bytes = utils.b64ToArrayBuffer(itemData.value)
-    await readItem(bytes, 0x60)
-  }
-  const onItemFileLoad = async (ev: ProgressEvent<FileReader>) => {
-    // @ts-ignore
-    const itemData = ev.result
-    if (itemData === null) {
-      throw 'Invalid data'
-    }
-    // @ts-ignore
-    await readItem(itemData, 0x60);
-    if (preview !== null) {
-      paste(preview);
-    }
-  }
-  const onItemFileChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const itemData = event.currentTarget.files
-    const reader = new FileReader();
-    if (itemData === null) {
-      throw 'Invalid data'
-    }
-    reader.addEventListener('load', e => onItemFileLoad(e))
-    reader.readAsArrayBuffer(itemData[0])
-    event.currentTarget.value = '';
-    handleClose()
-  }
-  const readItem = async (bytes: Uint8Array, version: number) => {
-    const itemData = await d2s.readItem(bytes, version, window.constants.constants);
-    if (itemData === null) {
-      throw 'Value is null'
-    }
-    setPreview(itemData)
-    await utils.setPropertiesOnItem(preview);
-  }
-  const loadBase64Item = async () => {
-    try {
-      const b64 = prompt('Please enter your base64 string for item.');
-      if (b64 === null || b64.length < 1) {
-        return;
-      }
-      const bytes = utils.b64ToArrayBuffer(b64);
-      await readItem(bytes, 0x60);
-      if (preview !== null) {
-        paste(preview);
-      }
-    } catch (e) {
-      alert('Failed to read item.');
-    }
-    handleClose()
-  }
-  const loadItem = () => {
-    if (preview !== null) {
-      paste(preview);
-    }
-    handleClose()
-  }
-  const handleClose = () => setShowModal(false);
-
-  return (
-    <Modal show={showModal} onHide={handleClose} dialogClassName={isThemed ? 'theme-d2' : ''}>
-      <Modal.Header closeButton>
-        <Modal.Title>Select an Item</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <div className="row d-flex justify-content-center mt-3 pl-5 pr-5">
-          {preview && (
-            <Item
-              item={preview}
-              clazz={'item-edit'}
-            />
-          )}
-        </div>
-        <label htmlFor={'ItemSelect'}>Item</label>
-        <Select
-          id={'ItemSelect'}
-          onChange={e => { if (e && e.value) { previewItem(e.value) } }}
-          className={'react-select-container'}
-          classNamePrefix={'react-select'}
-          onBlur={(e) => { e.preventDefault(); return false}}
-          options={itemRows}
-        />
-      </Modal.Body>
-      <Modal.Footer>
-        <input style={{display: 'none'}} type="file" name="d2iFile" onChange={onItemFileChange} id="d2iFile"/>
-        <label htmlFor="d2iFile" className="mb-0 btn btn-primary">Load From File</label>
-        <Button variant="primary" onClick={loadBase64Item}>
-          Load From String
-        </Button>
-        <Button variant="primary" onClick={loadItem}>Load</Button>
-        <Button variant="secondary" onClick={handleClose}>Close</Button>
-      </Modal.Footer>
-    </Modal>
-  )
-}
-
 type ItemsProps = {
-  saveData: D2CS;
-  activeTab: string;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
-  gridChange: (grid: gridType) => void;
-  grid: gridType;
-  onEvent: onEvent;
-  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
-  clipboard: D2CItem | null;
-  paste: paste;
-  isThemed: boolean;
-  itemPack: ItemPack;
+  hook: Hook
+  saveData: D2CS
+  activeTab: string
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>
+  onEvent: onEvent
+  paste: paste
 }
 const Items = ({
+  hook,
   saveData,
   activeTab,
   setActiveTab,
-  isThemed,
-  itemPack,
-  grid,
-  gridChange,
   onEvent,
-  selectEvent,
-  clipboard,
   paste,
 }: ItemsProps) => {
   const [showModal, setShowModal] = React.useState<boolean>(false);
@@ -289,10 +150,9 @@ const Items = ({
       }}
     >
       <AddItemModal
+        hook={hook}
         showModal={showModal}
         setShowModal={setShowModal}
-        itemPack={itemPack}
-        isThemed={isThemed}
         paste={paste}
       />
       <Row className={'mt-3'}>
@@ -342,9 +202,7 @@ const Items = ({
         </Col>
         <Col md={3}>
           <RightMenu
-            grid={grid}
-            gridChange={gridChange}
-            clipboard={clipboard}
+            hook={hook}
             paste={paste}
             setShowModal={setShowModal}
           />
@@ -355,51 +213,51 @@ const Items = ({
           <Equipped
             expansion={saveData.header.status.expansion}
             items={equipped(saveData)}
-            selectEvent={selectEvent}
+            hook={hook}
             onEvent={onEvent}
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'belt'}>
           <Grid
             id={'BeltGrid'}
-            width={grid.belt.w}
-            height={grid.belt.h}
+            hook={hook}
+            width={hook.grid.grid.belt.w}
+            height={hook.grid.grid.belt.h}
             items={belt(saveData)}
             page={0}
-            selectEvent={selectEvent}
             onEvent={onEvent}
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'inventory'}>
           <Grid
             id={'InventoryGrid'}
-            width={grid.inv.w}
-            height={grid.inv.h}
+            hook={hook}
+            width={hook.grid.grid.inv.w}
+            height={hook.grid.grid.inv.h}
             items={inventory(saveData)}
             page={1}
-            selectEvent={selectEvent}
             onEvent={onEvent}
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'stash'}>
           <Grid
             id={'StashGrid'}
-            width={grid.stash.w}
-            height={grid.stash.h}
+            hook={hook}
+            width={hook.grid.grid.stash.w}
+            height={hook.grid.grid.stash.h}
             items={stash(saveData)}
             page={5}
-            selectEvent={selectEvent}
             onEvent={onEvent}
           />
         </Tab.Pane>
         <Tab.Pane eventKey={'cube'}>
           <Grid
             id={'CubeGrid'}
-            width={grid.cube.w}
-            height={grid.cube.h}
+            hook={hook}
+            width={hook.grid.grid.cube.w}
+            height={hook.grid.grid.cube.h}
             items={cube(saveData)}
             page={4}
-            selectEvent={selectEvent}
             onEvent={onEvent}
           />
         </Tab.Pane>

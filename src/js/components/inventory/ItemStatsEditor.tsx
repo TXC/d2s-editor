@@ -128,7 +128,7 @@ const ClassSkillValues = ({itemStat, rowId, update, i}: StatValueProps) => {
             update(itemStat, rowId)
           }
         }}
-        value={classSkillRows[itemStat.id]}
+        value={classSkillRows[itemStat.values[i]]}
         options={classSkillRows}
       />
     </div>

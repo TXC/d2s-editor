@@ -2,7 +2,7 @@ import * as React from 'react'
 import InvItem from './components/inventory/Item'
 import {types} from '@dschu012/d2s'
 import {Menu, Item, contextMenu} from 'react-contexify'
-import type {optionClickedProps} from './components/App'
+import type {optionClickedProps, Hook} from './components/App'
 import type {D2CItem, D2CS} from './types'
 
 export const head = (items: D2CItem[]): D2CItem | undefined => {
@@ -114,7 +114,6 @@ export type EquipDrop = ($event: React.DragEvent, ref: React.RefObject<HTMLDivEl
 export type EquipDragOver = ($event: React.DragEvent) => boolean
 export type EquipDragEnter = ($event: React.DragEvent, ref: React.RefObject<HTMLDivElement>, position: number) => void
 export type EquipDragLeave = ($event: React.DragEvent, ref: React.RefObject<HTMLDivElement>) => void
-export type EquipOnSelect = (item: D2CItem) => void
 
 type SpanElProp = {
   onDrop?: ($event: React.DragEvent) => void
@@ -128,26 +127,26 @@ type itemElProp = {
 }
 
 export type EquippedItemArguments = {
-  id: string;
-  className: string;
-  position: number;
-  selectEvent: EquipOnSelect;
-  item?: D2CItem;
-  drop?: EquipDrop;
-  dragover?: EquipDragOver;
-  dragenter?: EquipDragEnter;
-  dragleave?: EquipDragLeave;
+  id: string
+  className: string
+  position: number
+  item?: D2CItem
+  hook: Hook
+  drop?: EquipDrop
+  dragover?: EquipDragOver
+  dragenter?: EquipDragEnter
+  dragleave?: EquipDragLeave
 }
 export const EquippedItem = ({
   id,
   className,
   item,
+  hook,
   position,
   drop,
   dragover,
   dragenter,
-  dragleave,
-  selectEvent
+  dragleave
 }: EquippedItemArguments) => {
   const ref = React.useRef(null),
         spanProps: SpanElProp = {},
@@ -166,9 +165,10 @@ export const EquippedItem = ({
     spanProps.onDragLeave = ($event) => dragleave($event, ref)
   }
 
-  if (selectEvent && item) {
-    itemDivProps.clickEvent = () => selectEvent(item)
+  if(item && hook.selected.setSelected) {
+    itemDivProps.clickEvent = () => hook.selected.setSelected(item)
   }
+
   if (item) {
     itemDivProps.contextMenuEvent = ($event) => contextMenu.show({
       id: RCItemMenuId,

@@ -1,3 +1,4 @@
+import {Form} from 'react-bootstrap'
 import {D2CS} from '../types'
 import { updateSaveData } from './App'
 
@@ -90,42 +91,22 @@ const SingleNPC = ({saveData, difficulty, act, npc, updateNPC}: SingleNPCProps) 
       <label>{npc.label}</label>
       <ul>
         <li>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id={`NPCintro${difficulty.key}${npc.key}`}
-              defaultChecked={defaultValue.intro}
-              value={1}
-              onChange={() => updateNPC(difficulty, act, npc, 'intro', !defaultValue.intro)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`NPCintro${difficulty.key}${npc.key}`}
-            >
-              Introduced
-            </label>
-          </div>
+          <Form.Switch
+            id={`NPCintro${difficulty.key}${npc.key}`}
+            defaultChecked={defaultValue.intro}
+            value={1}
+            onChange={() => updateNPC(difficulty, act, npc, 'intro', !defaultValue.intro)}
+            label="Introduced"
+          />
         </li>
         <li>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id={`NPCcongrat${difficulty.key}${npc.key}`}
-              defaultChecked={defaultValue.congrats}
-              value={1}
-              onChange={() => updateNPC(difficulty, act, npc, 'congrats', !defaultValue.congrats)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`NPCcongrat${difficulty.key}${npc.key}`}
-            >
-              Congratulated
-            </label>
-          </div>
+          <Form.Switch
+            id={`NPCcongrat${difficulty.key}${npc.key}`}
+            defaultChecked={defaultValue.congrats}
+            value={1}
+            onChange={() => updateNPC(difficulty, act, npc, 'congrats', !defaultValue.congrats)}
+            label="Congratulated"
+          />
         </li>
       </ul>
     </li>
@@ -157,23 +138,13 @@ const Act = ({saveData, difficulty, act, updateNPC, updateAct}: ActProps) => {
     <li>
       {npcRows.length > 0 && (
         <>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id={`NPCAct${difficulty.key}${act.key}`}
-              defaultChecked={act.all}
-              value={1}
-              onChange={() => updateAct(difficulty, act)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`NPCAct${difficulty.key}${act.key}`}
-            >
-              {act.label}
-            </label>
-          </div>
+          <Form.Switch
+            id={`NPCAct${difficulty.key}${act.key}`}
+            defaultChecked={act.all}
+            value={1}
+            onChange={() => updateAct(difficulty, act)}
+            label={act.label}
+          />
           <ul>
             {npcRows}
           </ul>
@@ -214,23 +185,13 @@ const Difficulty = ({
     <div className="col-md-4 p-2">
       <ul>
         <li>
-          <div className="form-check form-switch">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              role="switch"
-              id={`NPCDifficulty${difficulty.key}`}
-              defaultChecked={difficulty.all}
-              value={1}
-              onChange={() => updateDiff(difficulty)}
-            />
-            <label
-              className="form-check-label"
-              htmlFor={`NPCDifficulty${difficulty.key}`}
-            >
-              {difficulty.label}
-            </label>
-          </div>
+          <Form.Switch
+            id={`NPCDifficulty${difficulty.key}`}
+            defaultChecked={difficulty.all}
+            value={1}
+            onChange={() => updateDiff(difficulty)}
+            label={difficulty.label}
+          />
           <ul>
             {actRows.length > 0 ? actRows : []}
           </ul>

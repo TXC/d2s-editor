@@ -1,24 +1,17 @@
 import * as React from 'react'
 import * as d2s from '@dschu012/d2s'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faGithub} from '@fortawesome/free-brands-svg-icons'
-import Stats from './Stats'
-import Waypoints from './Waypoints'
-import Quests from './Quests'
-import Skills from './Skills'
-import Items from './Items'
-import MessageViewer from './MessageViewer'
-import NPC from './NPC'
 import utils from '../utils'
-import useGrid from '../hooks/Grid'
-import {Dropdown, Tab, Nav, Button, ButtonGroup, Container, Col, Row, Modal, Navbar} from 'react-bootstrap'
-
-import type {heightWidthType, gridType} from '../hooks/Grid'
-import type {ItemPack, D2CItem, D2CS, KeyValue} from '../types'
-import type {notificationType, removeNotification} from './MessageViewer'
+import useGrid, {GridProp} from '../hooks/Grid'
+import useTheme, {ThemeProp} from '../hooks/Theme'
+import useClipBoard, {ClipboardProp} from '../hooks/ClipBoard'
+import useNotification, {NotificationProp} from '../hooks/Notifications'
+import useSelectedItem, {LocationProp, locationType, SelectedProp} from '../hooks/SelectedItem'
+import SelectedItemModal from './modal/SelectedItem'
+import NavigationBar from './NavBar'
+import MainContent from './Main'
+import type {heightWidthType} from '../hooks/Grid'
+import type {D2CItem, D2CS} from '../types'
 import {equipped, RCGridMenu, RCItemMenu, waist} from '../Common'
-import Mercenary from './Mercenary'
-import ItemEditor from './inventory/ItemEditor';
 //import DC6 from "../DC6";
 
 export type updateSaveData = (newData: D2CS|null) => void
@@ -32,419 +25,10 @@ export type D2CEvent = {
 }
 export type onEvent = (e: D2CEvent) => void;
 export type paste = (item: D2CItem|null, position?: locationType) => void;
-export type locationType = {
-  location: number;
-  equipped_location?: number;
-  x?: number;
-  y?: number;
-  storage_page?: number;
-}
 export type optionClickedProps = {
   type: string;
   item?: D2CItem;
   grid?: Array<number>;
-}
-
-// region JSX functions
-type NavigationBarProps = {
-  toggleTheme: () => void;
-}
-const NavigationBar = ({toggleTheme}: NavigationBarProps) => {
-  return (
-    <Navbar bg="light" expand="xl">
-      <Container fluid>
-        <Navbar.Brand>
-          <FontAwesomeIcon icon={faGithub} />
-          <a href="https://github.com/TXC">TXC</a> /
-          <a className="font-weight-bold" href="https://github.com/TXC/d2s-editor">d2s-editor</a>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="navbar-nav" />
-        <Navbar.Collapse id="navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link href="#">Home</Nav.Link>
-            <Nav.Link href="#" onClick={toggleTheme}>Change Theme</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  )
-}
-
-type CharacterProps = {
-  updateSaveData: updateSaveData;
-}
-const Character = ({updateSaveData}: CharacterProps) => {
-  const id = React.useId()
-  const newChar= (index: number) => {
-    const charPack = utils.getCharPack()
-    const bytes = utils.b64ToArrayBuffer(charPack[index]);
-    readBuffer(bytes);
-  }
-  const onFileLoad = (event: ProgressEvent<FileReader>, filename: string) => {
-    if (!event.currentTarget) {
-      throw 'Invalid object'
-    }
-    // @ts-ignore
-    const itemData = event.currentTarget.result
-    if (itemData === null || !(itemData instanceof ArrayBuffer)) {
-      throw 'Invalid data'
-    }
-    readBuffer(new Uint8Array(itemData), filename);
-  }
-  const onFileChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const itemData = event.currentTarget.files
-    if (itemData === null) {
-      throw 'Invalid data'
-    }
-    const reader = new FileReader();
-    reader.addEventListener('load', e => {
-      onFileLoad(e, itemData[0].name)
-    })
-    reader.readAsArrayBuffer(itemData[0]);
-    //event.currentTarget.value = '';
-  }
-  const readBuffer = (bytes: Uint8Array, filename: string|null = null) => {
-    updateSaveData(null)
-    d2s.read(bytes, window.constants.constants).then(response => {
-      if (filename !== null) {
-        response.header.name = filename.split('.')[0]
-      }
-      updateSaveData(response)
-    });
-  }
-
-  return (
-    <div className="form-group mb-4">
-      <div className="input-group">
-        <div className="form-control custom-file">
-          <input
-            type="file"
-            name="d2sFile"
-            className="custom-file-input"
-            accept=".d2s"
-            placeholder="*.d2s"
-            onChange={onFileChange}
-            id={id}
-          />
-          <label
-            className="custom-file-label"
-            htmlFor={id}
-          >
-            *.d2s
-          </label>
-        </div>
-        <Dropdown>
-          <Dropdown.Toggle variant="secondary">Create New</Dropdown.Toggle>
-
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => newChar(0)}>Amazon</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(1)}>Sorceress</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(2)}>Necromancer</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(3)}>Paladin</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(4)}>Barbarian</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(5)}>Druid</Dropdown.Item>
-            <Dropdown.Item onClick={() => newChar(6)}>Assassin</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </div>
-    </div>
-  )
-}
-
-type RowBottomProps = {
-  saveData: D2CS | null;
-  updateSaveData: updateSaveData;
-}
-const RowBottom = ({saveData, updateSaveData}: RowBottomProps) => {
-  const maxGold = () => {
-    if (saveData === null) {
-      return;
-    }
-    const newData = saveData
-    newData.attributes.gold = saveData.header.level * 10000
-    newData.attributes.stashed_gold = 2500000
-    updateSaveData(newData)
-  }
-  const unlockQs = () => {
-    if (saveData === null) {
-      return;
-    }
-    const newData = saveData
-
-    function update(difficulty: string, act: string, quest: string, attributes: Array<string> | null, amount: number | null) {
-      if (newData === null) {
-        return;
-      }
-
-      // @ts-ignore
-      if (!newData.header[difficulty]) {
-        // @ts-ignore
-        newData.header[difficulty] = {}
-      }
-
-      // @ts-ignore
-      if (!newData.header[difficulty][act]) {
-        // @ts-ignore
-        newData.header[difficulty][act] = {}
-      }
-      // @ts-ignore
-      if (!newData.header[difficulty][act][quest]) {
-        // @ts-ignore
-        newData.header[difficulty][act][quest] = {}
-      }
-      // @ts-ignore
-      if (newData.header[difficulty][act][quest].is_completed === false) {
-        // @ts-ignore
-        newData.header[difficulty][act][quest].is_completed = true;
-        if (quest === 'prison_of_ice') {
-          // @ts-ignore
-          newData.header[difficulty][act][quest].consumed_scroll = true;
-        } else {
-          if (attributes === null) {
-            return
-          }
-          if (amount === null) {
-            amount = 0
-          }
-          for (const attribute of attributes) {
-            newData.attributes[attribute] = (newData.attributes[attribute] ?? 0) + amount;
-          }
-        }
-      }
-    }
-
-    for (const diff of ['quests_normal', 'quests_nm', 'quests_hell']) {
-      update(diff, 'act_i', 'den_of_evil', ['unused_skill_points'], 1);
-      update(diff, 'act_ii', 'radaments_lair', ['unused_skill_points'], 1);
-      update(diff, 'act_iii', 'lam_esens_tome', ['unused_stats'], 5);
-      update(diff, 'act_iii', 'the_golden_bird', ['max_hp', 'current_hp'], 20);
-      update(diff, 'act_iv', 'the_fallen_angel', ['unused_skill_points'], 2);
-      update(diff, 'act_v', 'prison_of_ice', null, null);
-    }
-    updateSaveData(newData)
-  }
-  const unlockHell = () => {
-    if (saveData === null) {
-      return;
-    }
-    const newData = saveData
-    for (const i of ['quests_normal', 'quests_nm', 'quests_hell']) {
-      // @ts-ignore
-      if (!newData.header[i]) {
-        // @ts-ignore
-        newData.header[i] = {}
-      }
-
-      for (const j of ['act_i', 'act_ii', 'act_iii', 'act_iv', 'act_v']) {
-        // @ts-ignore
-        if (!newData.header[i][j]) {
-          // @ts-ignore
-          newData.header[i][j] = null
-        }
-
-        // @ts-ignore
-        newData.header[i][j].introduced = true;
-        // @ts-ignore
-        newData.header[i][j].completed = true;
-      }
-      // @ts-ignore
-      newData.header[i].act_i.sisters_to_the_slaughter.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_ii.the_summoner.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_ii.tainted_sun.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_ii.the_horadric_staff.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_ii.arcane_sanctuary.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_ii.the_seven_tombs.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_iii.khalims_will.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_iii.the_blackened_temple.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_iii.the_guardian.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_iv.terrors_end.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_v.rite_of_passage.is_completed = true;
-      // @ts-ignore
-      newData.header[i].act_v.eve_of_destruction.is_completed = true;
-    }
-
-    for (const i of ['normal', 'nm', 'hell']) {
-      // @ts-ignore
-      if (!newData.header.waypoints[i]) {
-        // @ts-ignore
-        newData.header.waypoints[i] = {}
-      }
-
-      // @ts-ignore
-      newData.header.waypoints[i].act_i.rogue_encampement = true;
-      // @ts-ignore
-      newData.header.waypoints[i].act_ii.lut_gholein = true;
-      // @ts-ignore
-      newData.header.waypoints[i].act_iii.kurast_docks = true;
-      // @ts-ignore
-      newData.header.waypoints[i].act_iv.the_pandemonium_fortress = true;
-      // @ts-ignore
-      newData.header.waypoints[i].act_v.harrogath = true;
-    }
-    newData.header.progression = 15;
-    updateSaveData(newData)
-  }
-  const unlockAllWPs = () => {
-    if (saveData === null) {
-      return
-    }
-    const newData = saveData
-    for (const i of ['normal', 'nm', 'hell']) {
-      // @ts-ignore
-      for (const a in newData.header.waypoints[i]) {
-        // @ts-ignore
-        for (const w in newData.header.waypoints[i][a]) {
-          // @ts-ignore
-          newData.header.waypoints[i][a][w] = true;
-        }
-      }
-    }
-    updateSaveData(newData)
-  }
-  const setLvl99 = () => {
-    if (saveData === null) {
-      return
-    }
-    const newData = saveData
-    newData.header.level = 99;
-    updateSaveData(newData)
-  }
-  const setAllSkills20 = () => {
-    if (saveData === null) {
-      return;
-    }
-    const newData = saveData
-    for (let i = 0; i < saveData.skills.length; i++) {
-      newData.skills[i].points = 20;
-    }
-    updateSaveData(newData)
-  }
-  const saveFile = (version: number) => {
-    if (saveData === null) {
-      return;
-    }
-
-    const newData = saveData
-    newData.header.version = version
-    updateSaveData(newData)
-
-    const link = document.createElement('a');
-    link.style.display = 'none';
-    document.body.appendChild(link);
-
-    d2s.write(saveData, window.constants.constants).then(response => {
-      const blob = new Blob([response], {type: 'octet/stream'});
-      link.href = window.URL.createObjectURL(blob);
-      link.download = saveData.header.name + '.d2s';
-      link.click();
-      link.remove();
-    });
-  }
-
-  return (
-    <Container fluid>
-      <Row xs={1}>
-        <Col xs={12} className="mb-2">
-          <ButtonGroup className="mr-2">
-            <Button onClick={unlockHell}>Unlock Hell</Button>
-            <Button onClick={unlockAllWPs}>Unlock All WPs</Button>
-            <Button onClick={setLvl99}>Set Level 99</Button>
-            <Button onClick={setAllSkills20}>Set All Skills 20</Button>
-            <Button onClick={unlockQs}>Complete Skill/Stat Qs</Button>
-            <Button onClick={maxGold}>Max Gold</Button>
-          </ButtonGroup>
-        </Col>
-      </Row>
-
-      <Row xs={1}>
-        <Col xs={12}>
-          <ButtonGroup className="mr-2">
-            <Button onClick={() => saveFile(0x60)}>Save D2</Button>
-            <Button onClick={() => saveFile(0x61)}>Save D2R</Button>
-          </ButtonGroup>
-        </Col>
-      </Row>
-    </Container>
-  )
-}
-
-type SelectedItemModalProps = {
-  isThemed: boolean;
-  selected: D2CItem | null;
-  setLocation: React.Dispatch<React.SetStateAction<locationType | null>>;
-  setSelected: React.Dispatch<React.SetStateAction<D2CItem | null>>;
-  location: locationType | null;
-  callOnEvent: onEvent
-}
-const SelectedItemModal = ({isThemed, selected, setSelected, location, setLocation, callOnEvent}: SelectedItemModalProps) => {
-  const handleClose = () => {
-    if (!selected) {
-      return
-    }
-    callOnEvent({ item: selected, type: 'update' })
-    setSelected(null)
-  }
-  const id = React.useId()
-
-  return (
-    <Modal
-      animation={false}
-      size="lg"
-      show={selected !== null}
-      onHide={handleClose}
-      dialogClassName={isThemed ? 'theme-d2' : ''}
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Selected Item</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {selected !== null && (
-          <ItemEditor
-            id={id}
-            item={selected}
-            setSelected={setSelected}
-            setLocation={setLocation}
-            location={location}
-            callOnEvent={callOnEvent}
-          />
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        { selected !== null && (
-          <div className="btn-group">
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => callOnEvent({type: 'share', item: selected })}
-            >Share</button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => callOnEvent({type: 'copy', item: selected })}
-            >Copy</button>
-            { selected.location_id !== 6 && (
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={() => callOnEvent({type: 'delete', item: selected })}
-              >Delete</button>
-            )}
-          </div>
-        )}
-        <Button variant="secondary" onClick={handleClose}>Close</Button>
-      </Modal.Footer>
-    </Modal>
-  )
 }
 
 /*
@@ -475,174 +59,31 @@ const Prutt = () => {
 }
 */
 
-type MainContentProps = {
-  saveData: D2CS | null;
-  updateSaveData: (newData: D2CS|null) => void;
-  notifications: notificationType[];
-  removeNotification: removeNotification;
-  gridChange: (grid: gridType) => void;
-  activeTab: string;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
-  onEvent: onEvent
-  selectEvent: React.Dispatch<React.SetStateAction<D2CItem | null>>;
-  grid: gridType;
-  paste: (item: D2CItem | null, position?: locationType) => void;
-  clipboard: D2CItem | null;
-  isThemed: boolean;
-  itemPack: ItemPack;
-}
-const MainContent = ({
-  saveData,
-  updateSaveData,
-  gridChange,
-  notifications,
-  removeNotification,
-  activeTab,
-  setActiveTab,
-  onEvent,
-  selectEvent,
-  grid,
-  clipboard,
-  paste,
-  isThemed,
-  itemPack
-}: MainContentProps) => {
-  const [selectedIndex, setSelectedIndex] = React.useState<string>('stats');
-  const id = React.useId()
-
-  return (
-    <div className="row">
-      <div className="offset-lg-2 col-lg-8 mt-2">
-        <div className="card bg-light">
-          <div className="card-body">
-            <div className="alert alert-primary" role="alert">
-              This editor is still a work in progress. Some things may not work. Found a bug? <a
-              href="https://github.com/TXC/d2s-editor/issues/new">Report it.</a>
-            </div>
-            <form id={id}>
-              <fieldset>
-                <Character updateSaveData={updateSaveData} />
-                <MessageViewer messages={notifications} removeMessage={removeNotification}/>
-                {saveData !== null && (
-                  <Tab.Container
-                    id={'tabs'}
-                    defaultActiveKey={selectedIndex}
-                    onSelect={(e) => {
-                      if (e) {
-                        setSelectedIndex(e)
-                      }
-                    }}
-                  >
-                    <Nav variant={'tabs'}>
-                      <Nav.Item>
-                        <Nav.Link eventKey="stats">Stats</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="waypoints">Waypoints</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="npcs">NPCs</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="quests">Quests</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="skills">Skills</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="items">Items</Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link eventKey="mercenary">Mercenary</Nav.Link>
-                      </Nav.Item>
-                    </Nav>
-                    <Tab.Content className="main">
-                      <Tab.Pane eventKey={'stats'} transition={false}>
-                        <Stats
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'waypoints'} transition={false}>
-                        <Waypoints
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'npcs'} transition={false}>
-                        <NPC
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'quests'} transition={false}>
-                        <Quests
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'skills'} transition={false}>
-                        <Skills
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'items'} transition={false}>
-                        <Items
-                          saveData={saveData}
-                          gridChange={gridChange}
-                          activeTab={activeTab}
-                          setActiveTab={setActiveTab}
-                          onEvent={onEvent}
-                          selectEvent={selectEvent}
-                          grid={grid}
-                          clipboard={clipboard}
-                          paste={paste}
-                          isThemed={isThemed}
-                          itemPack={itemPack}
-                        />
-                      </Tab.Pane>
-                      <Tab.Pane eventKey={'mercenary'} transition={false}>
-                        <Mercenary
-                          id={`${id}-mercenary`}
-                          saveData={saveData}
-                          updateSaveData={updateSaveData}
-                          selectEvent={selectEvent}
-                        />
-                      </Tab.Pane>
-                    </Tab.Content>
-                  </Tab.Container>
-                )}
-              </fieldset>
-              {saveData !== null && (
-                <>
-                  <br/>
-                  <RowBottom
-                    saveData={saveData}
-                    updateSaveData={updateSaveData}
-                  />
-                </>
-              )}
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+export type Hook = {
+  grid: GridProp
+  theme: ThemeProp
+  notification: NotificationProp
+  clipboard: ClipboardProp
+  selected: SelectedProp
+  location: LocationProp
 }
 
 const App = () => {
-  const {grid, updateGrid} = useGrid();
+  const {grid, calculateBeltSize, updateGrid} = useGrid()
+  const {isThemed, toggleTheme} = useTheme()
+  const {notifications, addNotification, removeNotification} = useNotification()
+  const {setSelected, selected, setLocation, location} = useSelectedItem()
+  const {clipboard, setClipboard} = useClipBoard()
+  const Hook: Hook = {
+    grid: {grid: grid, calculateBeltSize: calculateBeltSize, updateGrid: updateGrid},
+    theme: {isThemed: isThemed, toggleTheme: toggleTheme},
+    notification: {notifications: notifications, removeNotification: removeNotification, addNotification: addNotification},
+    clipboard: {clipboard: clipboard, setClipboard: setClipboard},
+    selected: {selected: selected, setSelected: setSelected},
+    location: {location: location, setLocation: setLocation}
+  }
 
-  const themed = localStorage.getItem('themed') === 'true'
-
-  const [notifications, setNotification] = React.useState<notificationType[]>([]);
-  const [clipboard, setClipboard] = React.useState<D2CItem | null>(null);
-  const [selected, setSelected] = React.useState<D2CItem | null>(null);
-  const [location, setLocation] = React.useState<locationType | null>(null);
   const [saveData, setSaveData] = React.useState<D2CS | null>(null);
-  const [itemPack, setItemPack] = React.useState<ItemPack>(utils.getItemPack());
-  const [isThemed, setTheme] = React.useState<boolean>(themed);
   const [activeTab, setActiveTab] = React.useState<string>('equipped');
 
   const optionClicked = (event: optionClickedProps) => {
@@ -691,9 +132,6 @@ const App = () => {
         setSelected(event.item);
         break;
     }
-  }
-  const gridChange = (grid: gridType) => {
-    updateGrid(grid)
   }
 
   // region App functions
@@ -986,73 +424,27 @@ const App = () => {
       message: 'Item data copied to clipboard. Use load from string to share it with someone.'
     });
   }
-  const addItemsPackBases = async (constCategory: object, categoryName: string): Promise<void> => {
-    const newItems = [];
-    for (const item of Object.entries(constCategory)) {
-      if (item[1].n) {
-        const newItem = Object();
-        const value = item[1];
-        newItem.type = item[0];
-        newItem.quality = 2;
-        newItem.level = 41;
-        newItem.inv_width = value.iw;
-        newItem.inv_height = value.ih;
-        newItem.categories = value.c;
-        newItem.identified = 1;
-        if (newItem.categories.indexOf('Weapon') > -1) {
-          newItem.base_damage = {
-            'mindam': value.mind,
-            'maxdam': value.maxd,
-            'twohandmindam': value.min2d,
-            'twohandmaxdmm': value.max2d
-          }
-        }
-        if (newItem.categories.indexOf('Any Armor') > -1) {
-          newItem.defense_rating = value.maxac;
-        }
-        newItem.max_durability = value.durability;
-        newItem.current_durability = value.durability;
-        newItems.push(newItem);
-      }
-    }
 
-    await d2s.enhanceItems(newItems, window.constants.constants);
-    for (const item of newItems) {
-      const bytes = await d2s.writeItem(item, 0x60, window.constants.constants);
-      const base64 = utils.arrayBufferToBase64(bytes);
-      const category = item.categories[0];
-      updateItemPack({
-        key: './Bases/' + categoryName + '/' + category + '/' + item.type_name + '.d2i',
-        value: base64
-      });
-    }
-  }
-
-  const addNotification = (data: notificationType) => {
-    setNotification(prev => {
-      return [...new Set([data, ...prev])]
-    })
-
-  }
-  const removeNotification = (idx: number) => {
-    setNotification(list => {
-      list.splice(idx, 1)
-      return list
-    })
-  }
-
-  const toggleTheme = () => {
-    setTheme(!isThemed)
-  }
-  const updateItemPack = (newData: KeyValue) => {
-    const newPack = itemPack
-    newPack.push(newData)
-    setItemPack(newPack)
-  }
   const updateSaveData = (newData: D2CS | null) => {
     if (newData === null) {
       setSaveData(null)
       return
+    }
+    [...newData.items, ...newData.merc_items, ...newData.corpse_items, newData.golem_item].forEach((item) => {
+      utils.setPropertiesOnItem(item)
+    });
+    newData.items = newData.items.map((item) => {
+      if (item.location_id !== 2) {
+        return item
+      }
+      item.position_x = ((item.position_y * 4) + item.position_x)
+      item.position_y = 0
+      return item;
+    })
+
+    const waistItem = waist(equipped(newData))
+    if (waistItem) {
+      calculateBeltSize(waistItem)
     }
     setSaveData(prev => {
       if (prev === null) {
@@ -1067,99 +459,26 @@ const App = () => {
     if (localStorage.getItem('palettes') === null) {
       utils.getPalettes()
     }
-
-    addItemsPackBases(window.constants.constants.weapon_items, 'Weapons');
-    addItemsPackBases(window.constants.constants.armor_items, 'Armor');
   }, [])
-
-  React.useEffect(() => {
-    localStorage.setItem('themed', isThemed ? 'true' : 'false');
-  }, [isThemed])
-
-  // updateLocation
-  React.useEffect(() => {
-    if (selected === null) {
-      setLocation(null)
-      return;
-    }
-    setLocation({
-      location: selected.location_id,
-      equipped_location: selected.equipped_id,
-      x: selected.position_x,
-      y: selected.position_y,
-      storage_page: selected.alt_position_id
-    })
-    d2s.enhanceItems([selected], window.constants.constants);
-  }, [selected])
-
-  // setPropertiesOnSave
-  React.useEffect(() => {
-    if (saveData === null) {
-      return;
-    }
-    const oldData = saveData;
-    [...saveData.items, ...saveData.merc_items, ...saveData.corpse_items, saveData.golem_item].forEach((item) => {
-      utils.setPropertiesOnItem(item)
-    });
-    saveData.items = saveData.items.map((item) => {
-      if (item.location_id !== 2) {
-        return item
-      }
-      item.position_x = ((item.position_y * 4) + item.position_x)
-      item.position_y = 0
-      return item;
-    })
-
-    const waistItem = waist(equipped(saveData))
-    if (waistItem) {
-      const newGrid = grid
-      if (waistItem.level < 3) {
-        newGrid.belt.h = 1
-      } else if (waistItem.level > 3 && waistItem.level < 12) {
-        newGrid.belt.h = 2
-      } else if (waistItem.level > 12 && waistItem.level < 27) {
-        newGrid.belt.h = 3
-      } else if (waistItem.level > 27) {
-        newGrid.belt.h = 4
-      }
-      gridChange(newGrid)
-    }
-
-    if (JSON.stringify(oldData) !== JSON.stringify(saveData)) {
-      setSaveData(saveData)
-    }
-  }, [saveData])
-
-      //<Prutt/>
+  //<Prutt/>
   return (
     <div className={isThemed ? 'theme-d2' : ''}>
-      <NavigationBar toggleTheme={toggleTheme}/>
+      <NavigationBar useTheme={useTheme}/>
       <RCItemMenu optionClicked={optionClicked} />
       <RCGridMenu optionClicked={optionClicked} />
       <SelectedItemModal
-        isThemed={isThemed}
-        location={location}
-        setLocation={setLocation}
-        selected={selected}
-        setSelected={setSelected}
+        hook={Hook}
         callOnEvent={onEvent}
       />
       <div className="container-fluid">
         <MainContent
+          hook={Hook}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onEvent={onEvent}
-          selectEvent={setSelected}
           saveData={saveData}
           updateSaveData={updateSaveData}
-          notifications={notifications}
-          removeNotification={removeNotification}
-          gridChange={gridChange}
-          grid={grid}
           paste={paste}
-          clipboard={clipboard}
-          isThemed={isThemed}
-          itemPack={itemPack}
         />
       </div>
       {isThemed && (
